@@ -16,35 +16,51 @@ ProcessedPacket::ProcessedPacket(
 )
     :packet_size_recv{packet_header->len}, packet_size_real{packet_header->caplen}
 {
-
-    this->mac_dst = packet_body;
-    this->mac_src = packet_body + Ethernet::MAC_SIZE;
+    for(int i = 0; i < Ethernet::MAC_SIZE; i++)
+    {
+        this->mac_dst[i] = *(packet_body+i);
+        this->mac_src[i] = *(packet_body+i+Ethernet::MAC_SIZE);
+    }
     uint16_t ether_type = big_endian_to_small(*(uint16_t*)(packet_body + Ethernet::ETHER_TYPE_OFFSET)); 
     this->eth_type = ether_type >= 0x0800 ? EthernetStandard::EthernetII : EthernetStandard::NovellRAW;
-
 }
 
 ProcessedPacket::~ProcessedPacket()
 {
 }
 
+void PrintIPAddress(std::ostream& os, const uint8_t* address)
+{
+
+}
+
 void PrintMACAddress(std::ostream& os, const uint8_t* address)
 {
     for(int i = 0; i < Ethernet::MAC_SIZE; i++)
     {
-        os << std::setfill('0') << std::setw(2) << std::hex << (short) address[i] << ' ';
+        os << std::setfill('0') << std::setw(2) << std::hex <<(int) address[i] << ' ';
     }
+
     os << '\n';
 }
 
 std::ostream& operator<<(std::ostream& os, const ProcessedPacket& packet)
 {
-    os << std::dec << "dĺžka rámca poskytnutá pcap API – " << packet.packet_size_recv << " B \n"
-    << "dĺžka rámca prenášaného po médiu – " << packet.packet_size_real <<" B\n" 
+    os << std::dec << "dĺžka rámca poskytnutá pcap API – " 
+    << packet.packet_size_recv << " B \n"
+    << "dĺžka rámca prenášaného po médiu – " 
+    << packet.packet_size_real <<" B\n" 
     << "Zdrojová MAC adresa: ";
     PrintMACAddress(os, packet.mac_src);
     os << "Cieľová MAC adresa: ";
+    /*
     PrintMACAddress(os, packet.mac_dst);
+    os << "zdrojová IP adresa: ";
+    PrintIPAddress(os, packet.ip_src);
+    os << "cieľová IP adresa: ";
+    PrintIPAddress(os, packet.ip_dst);
+    */
+    os << '\n';
     return os;
 }
 
@@ -54,7 +70,7 @@ void print_packet(
     const uint8_t* packet_body
 )
 {
-    for(int i = 0; i < packet_header->len; i++)
+    for(uint32_t i = 0; i < packet_header->len; i++)
     {
         os << std::setfill('0') << std::setw(2) << std::hex << (short) packet_body[i] << ' ';
         if(!((i+1) % 16)) os << '\n'; 
