@@ -1,8 +1,7 @@
 #include <iostream>
 #include <iomanip> // for number formating
 #include <pcap.h>
-#include <stdint.h>
-#include <memory>
+#include <stdint.h> // non-standard data types (uintX_t)
 #include <vector>
 
 #include "constants.hpp"
@@ -53,8 +52,8 @@ std::ostream& operator<<(std::ostream& os, const ProcessedPacket& packet)
     << "Zdrojová MAC adresa: ";
     PrintMACAddress(os, packet.mac_src);
     os << "Cieľová MAC adresa: ";
-    /*
     PrintMACAddress(os, packet.mac_dst);
+    /*
     os << "zdrojová IP adresa: ";
     PrintIPAddress(os, packet.ip_src);
     os << "cieľová IP adresa: ";
@@ -86,13 +85,8 @@ void process_packet(
     const uint8_t* packet_body
 )
 {
-    if(!packet_body)
-    {
-        std::cout << "No packets found\n";
-    }
-    else {
-        std::cout << "Packet body: \n";
+    if(packet_body)
         args.push_back(ProcessedPacket{packet_header, packet_body});
-        print_packet(std::cout, packet_header, packet_body);
-    }
+    else
+        std::cout << "No packets found\n";
 }
