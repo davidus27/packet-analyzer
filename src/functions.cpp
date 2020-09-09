@@ -1,13 +1,42 @@
 #include <iostream>
 #include <iomanip> // for number formating
-#include <pcap.h>
 #include <stdint.h> // non-standard data types (uintX_t)
 #include <vector>
+#include <fstream>
+#include <string>
 
+#include <pcap.h>
 #include "constants.hpp"
 #include "functions.hpp"
 
 uint16_t big_endian_to_small(uint16_t value) { return (((value & 0xff)<<8) | ((value & 0xff00)>>8)); }
+
+const uint8_t* ProcessedPacket::set_ethernet_type(const uint8_t* packet_body)
+{
+    // two byte value stored in the data link layer
+    uint16_t ether_type = big_endian_to_small(*(uint16_t*)(packet_body + Ethernet::ETHER_TYPE_OFFSET)); 
+    
+    // default start for the Ethernet II standard
+    const uint8_t* data = packet_body + Ethernet::ETHER_TYPE_OFFSET + 1; 
+    
+    if(ether_type >= 0x800)
+    {
+        this->eth_type = EthernetStandard::EthernetII;
+        return data; 
+    }
+    if(*(uint16_t*)(packet_body + Ethernet::IPX_OFFSET) == 0xffff)
+    {
+        this->eth_type = EthernetStandard::NovellRAW;
+        return data + 3; // 3 bytes of IPX header
+    }
+    if( *(uint16_t*)(packet_body + Ethernet::SAP_OFFSET) == 0xaaaa)
+    {
+        this->eth_type = EthernetStandard::IEEE_LLC_SNAP;
+        return data + 3; // 3 bytes: DSAP + SSAP + Control
+    }
+    this->eth_type = EthernetStandard::IEEE_LLC;
+    return data + 8; // 8 bytes: DSAP + SSAP + Control + Vendor + EtherType
+}
 
 ProcessedPacket::ProcessedPacket(
     const struct pcap_pkthdr* packet_header, 
@@ -20,8 +49,9 @@ ProcessedPacket::ProcessedPacket(
         this->mac_dst[i] = *(packet_body+i);
         this->mac_src[i] = *(packet_body+i+Ethernet::MAC_SIZE);
     }
-    uint16_t ether_type = big_endian_to_small(*(uint16_t*)(packet_body + Ethernet::ETHER_TYPE_OFFSET)); 
-    this->eth_type = ether_type >= 0x0800 ? EthernetStandard::EthernetII : EthernetStandard::NovellRAW;
+    const uint8_t* data = set_ethernet_type(packet_body);
+    // TODO: find protocol etc 
+
 }
 
 ProcessedPacket::~ProcessedPacket()
@@ -53,6 +83,7 @@ std::ostream& operator<<(std::ostream& os, const ProcessedPacket& packet)
     PrintMACAddress(os, packet.mac_src);
     os << "Cieľová MAC adresa: ";
     PrintMACAddress(os, packet.mac_dst);
+    os << packet.eth_type << '\n';
     /*
     os << "zdrojová IP adresa: ";
     PrintIPAddress(os, packet.ip_src);
@@ -60,6 +91,28 @@ std::ostream& operator<<(std::ostream& os, const ProcessedPacket& packet)
     PrintIPAddress(os, packet.ip_dst);
     */
     os << '\n';
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const EthernetStandard& standard)
+{
+    switch (standard)
+    {
+    case EthernetStandard::EthernetII:
+        os << "Ethernet II ";
+        break;
+    case EthernetStandard::NovellRAW:
+        os << "IEEE 802.3 Raw ";
+        break;
+    case EthernetStandard::IEEE_LLC:
+        os << "IEEE 802.3 s LLC ";
+        break;
+    case EthernetStandard::IEEE_LLC_SNAP:
+        os << "IEEE 802.3 s LLC a SNAP";
+        break;
+    default:
+        break;
+    }
     return os;
 }
 
@@ -89,4 +142,30 @@ void process_packet(
         args.push_back(ProcessedPacket{packet_header, packet_body});
     else
         std::cout << "No packets found\n";
+}
+
+
+std::vector<std::pair<int, std::string>> load_configurations(const std::string& name)
+{
+    std::string text;
+    std::ifstream filename{name};
+    std::vector<std::pair<int, std::string>> pairs;
+    if(filename.is_open())
+    {
+        int position;
+        while(getline(filename, text))
+        {
+            position = text.find_first_of(' ');
+            pairs.push_back({
+                std::stoi(text.substr(0, position), nullptr, 16),
+                text.substr(position+1, text.size())});
+        }
+        filename.close();
+    }
+    else 
+    {
+        std::cout << "Unable to open file"; 
+        return std::vector<std::pair<int, std::string>>();
+    }
+    return pairs;
 }
