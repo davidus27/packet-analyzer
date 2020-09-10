@@ -20,16 +20,23 @@ enum class Layer3
 
 };
 
-struct ProcessedPacket
+struct Packet
+{
+    uint32_t real_size;
+    uint32_t captured_size;
+    std::vector<uint8_t> payload;
+    Packet(const struct pcap_pkthdr* packet_header, const uint8_t* packet_body);
+};
+
+struct ProcessedInfo
 {
 public:
-    ProcessedPacket(const struct pcap_pkthdr* packet_header, const uint8_t* packet_body);
-    ~ProcessedPacket();
-    friend std::ostream& operator<<(std::ostream& os, const ProcessedPacket& packet);
+    ProcessedInfo(const uint8_t* packet_body, int index);
+    ~ProcessedInfo();
+    friend std::ostream& operator<<(std::ostream& os, const ProcessedInfo& packet);
 
 private:
-    const uint32_t packet_size_recv;
-    const uint32_t packet_size_real;
+    int index;
     uint8_t mac_dst[Ethernet::MAC_SIZE];
     uint8_t mac_src[Ethernet::MAC_SIZE];
     uint8_t ip_dst[Ethernet::IP_SIZE];
@@ -39,23 +46,11 @@ private:
     Layer3 p2;
 
     const uint8_t* set_ethernet_type(const uint8_t* packet_body);
-
 };
 
 
 void PrintMACAddress(std::ostream& os, const uint8_t* address);
 void PrintIPAddress(std::ostream& os, const uint8_t* address);
-
-void print_packet(
-    std::ostream& os, 
-    const struct pcap_pkthdr* packet_header,
-    const uint8_t* packet_body
-);
-
-void process_packet(
-    std::vector<ProcessedPacket>& args,
-    const struct pcap_pkthdr* packet_header,
-    const uint8_t* packet_body
-);
-std::ostream& operator<<(std::ostream& os, const ProcessedPacket& packet);
+std::ostream& operator<<(std::ostream& os, const Packet& packet);
 std::ostream& operator<<(std::ostream& os, const EthernetStandard& standard);
+std::ostream& operator<<(std::ostream& os, const ProcessedInfo& info);

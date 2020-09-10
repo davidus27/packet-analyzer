@@ -11,7 +11,18 @@
 
 uint16_t big_endian_to_small(uint16_t value) { return (((value & 0xff)<<8) | ((value & 0xff00)>>8)); }
 
-const uint8_t* ProcessedPacket::set_ethernet_type(const uint8_t* packet_body)
+
+Packet::Packet(const struct pcap_pkthdr* packet_header, const uint8_t* packet_body)
+    :real_size{packet_header->len}, captured_size{packet_header->caplen}
+{
+    this->payload.reserve(packet_header->caplen);
+    for(unsigned long i = 0; i < packet_header->caplen; i++)
+    {
+        this->payload.emplace_back(packet_body[i]);
+    }
+}
+
+const uint8_t* ProcessedInfo::set_ethernet_type(const uint8_t* packet_body)
 {
     // two byte value stored in the data link layer
     uint16_t ether_type = big_endian_to_small(*(uint16_t*)(packet_body + Ethernet::ETHER_TYPE_OFFSET)); 
@@ -38,23 +49,20 @@ const uint8_t* ProcessedPacket::set_ethernet_type(const uint8_t* packet_body)
     return data + 8; // 8 bytes: DSAP + SSAP + Control + Vendor + EtherType
 }
 
-ProcessedPacket::ProcessedPacket(
-    const struct pcap_pkthdr* packet_header, 
-    const uint8_t* packet_body
-)
-    :packet_size_recv{packet_header->len}, packet_size_real{packet_header->caplen}
+ProcessedInfo::ProcessedInfo(const uint8_t* packet_body, int index)
+    :index{index}
 {
     for(int i = 0; i < Ethernet::MAC_SIZE; i++)
     {
-        this->mac_dst[i] = *(packet_body+i);
-        this->mac_src[i] = *(packet_body+i+Ethernet::MAC_SIZE);
+        this->mac_dst[i] = packet_body[i];
+        this->mac_src[i] = packet_body[i+Ethernet::MAC_SIZE];
     }
     const uint8_t* data = set_ethernet_type(packet_body);
     // TODO: find protocol etc 
 
 }
 
-ProcessedPacket::~ProcessedPacket()
+ProcessedInfo::~ProcessedInfo()
 {
 }
 
@@ -69,28 +77,42 @@ void PrintMACAddress(std::ostream& os, const uint8_t* address)
     {
         os << std::setfill('0') << std::setw(2) << std::hex <<(int) address[i] << ' ';
     }
-
     os << '\n';
 }
 
-std::ostream& operator<<(std::ostream& os, const ProcessedPacket& packet)
+std::ostream& operator<<(std::ostream& os, const Packet& packet)
 {
+    for(uint32_t i = 0; i < packet.payload.size(); i++)
+    {
+        os << std::setfill('0') << std::setw(2) << std::hex << (short) packet.payload[i] << ' ';
+        if(!((i+1) % 16)) os << '\n'; 
+        else if(!((i+1) % 8)) os << ' '; 
+    }
+    os << '\n';
+    return os;
+}
+
+
+std::ostream& operator<<(std::ostream& os, const ProcessedInfo& info)
+{
+    os << "Ramec " << std::dec << info.index;
+
+    /*
     os << std::dec << "dĺžka rámca poskytnutá pcap API – " 
-    << packet.packet_size_recv << " B \n"
+    << packet.captured_size << " B \n"
     << "dĺžka rámca prenášaného po médiu – " 
-    << packet.packet_size_real <<" B\n" 
+    << packet.real_size <<" B\n" 
     << "Zdrojová MAC adresa: ";
     PrintMACAddress(os, packet.mac_src);
     os << "Cieľová MAC adresa: ";
     PrintMACAddress(os, packet.mac_dst);
     os << packet.eth_type << '\n';
-    /*
     os << "zdrojová IP adresa: ";
     PrintIPAddress(os, packet.ip_src);
     os << "cieľová IP adresa: ";
     PrintIPAddress(os, packet.ip_dst);
-    */
     os << '\n';
+    */
     return os;
 }
 
@@ -115,35 +137,6 @@ std::ostream& operator<<(std::ostream& os, const EthernetStandard& standard)
     }
     return os;
 }
-
-void print_packet(
-    std::ostream& os, 
-    const struct pcap_pkthdr* packet_header,
-    const uint8_t* packet_body
-)
-{
-    for(uint32_t i = 0; i < packet_header->len; i++)
-    {
-        os << std::setfill('0') << std::setw(2) << std::hex << (short) packet_body[i] << ' ';
-        if(!((i+1) % 16)) os << '\n'; 
-        else if(!((i+1) % 8)) os << ' '; 
-    }
-    os<<'\n';
-}
-
-
-void process_packet(
-    std::vector<ProcessedPacket>& args,
-    const struct pcap_pkthdr* packet_header,
-    const uint8_t* packet_body
-)
-{
-    if(packet_body)
-        args.push_back(ProcessedPacket{packet_header, packet_body});
-    else
-        std::cout << "No packets found\n";
-}
-
 
 std::vector<std::pair<int, std::string>> load_configurations(const std::string& name)
 {
