@@ -49,29 +49,28 @@ const uint8_t* ProcessedInfo::set_ethernet_type(const uint8_t* packet_body)
     return data + 8; // 8 bytes: DSAP + SSAP + Control + Vendor + EtherType
 }
 
-ProcessedInfo::ProcessedInfo(const uint8_t* packet_body, int index)
-    :index{index}
+ProcessedInfo::ProcessedInfo(const struct pcap_pkthdr* packet_header, const uint8_t* packet_body)
+    :data{packet_header, packet_body}
 {
     for(int i = 0; i < Ethernet::MAC_SIZE; i++)
     {
         this->mac_dst[i] = packet_body[i];
         this->mac_src[i] = packet_body[i+Ethernet::MAC_SIZE];
     }
-    const uint8_t* data = set_ethernet_type(packet_body);
+    this->set_ethernet_type(packet_body);
+    //const uint8_t* data_p = set_ethernet_type(packet_body);
     // TODO: find protocol etc 
 
 }
 
-ProcessedInfo::~ProcessedInfo()
-{
-}
+ProcessedInfo::~ProcessedInfo() {}
 
-void PrintIPAddress(std::ostream& os, const uint8_t* address)
+void print_ip_address(std::ostream& os, const uint8_t* address)
 {
 
 }
 
-void PrintMACAddress(std::ostream& os, const uint8_t* address)
+void print_mac_address(std::ostream& os, const uint8_t* address)
 {
     for(int i = 0; i < Ethernet::MAC_SIZE; i++)
     {
@@ -95,24 +94,33 @@ std::ostream& operator<<(std::ostream& os, const Packet& packet)
 
 std::ostream& operator<<(std::ostream& os, const ProcessedInfo& info)
 {
-    os << "Ramec " << std::dec << info.index;
-
-    /*
     os << std::dec << "dĺžka rámca poskytnutá pcap API – " 
-    << packet.captured_size << " B \n"
-    << "dĺžka rámca prenášaného po médiu – " 
-    << packet.real_size <<" B\n" 
+    << info.data.captured_size << " B\n"
+    "dĺžka rámca prenášaného po médiu – "
+    << info.data.real_size << " B\n" 
     << "Zdrojová MAC adresa: ";
-    PrintMACAddress(os, packet.mac_src);
+    print_mac_address(os, info.mac_src);
     os << "Cieľová MAC adresa: ";
-    PrintMACAddress(os, packet.mac_dst);
-    os << packet.eth_type << '\n';
+    print_mac_address(os, info.mac_dst);
+    os << info.eth_type << '\n';
+    /*
     os << "zdrojová IP adresa: ";
-    PrintIPAddress(os, packet.ip_src);
+    PrintIPAddress(os, info.ip_src);
     os << "cieľová IP adresa: ";
-    PrintIPAddress(os, packet.ip_dst);
-    os << '\n';
+    PrintIPAddress(os, info.ip_dst);
     */
+    os << '\n';
+    return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const std::vector<ProcessedInfo>& list)
+{
+    int frame_count = 1;
+    for(auto a = list.begin(); a != list.end(); a++)
+    {
+        os << std::dec << "Ramec " << frame_count++ << '\n';
+        os << *a;
+    }
     return os;
 }
 

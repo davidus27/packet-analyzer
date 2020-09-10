@@ -31,12 +31,11 @@ struct Packet
 struct ProcessedInfo
 {
 public:
-    ProcessedInfo(const uint8_t* packet_body, int index);
+    ProcessedInfo(const struct pcap_pkthdr* packet_header, const uint8_t* packet_body);
     ~ProcessedInfo();
     friend std::ostream& operator<<(std::ostream& os, const ProcessedInfo& packet);
 
 private:
-    int index;
     uint8_t mac_dst[Ethernet::MAC_SIZE];
     uint8_t mac_src[Ethernet::MAC_SIZE];
     uint8_t ip_dst[Ethernet::IP_SIZE];
@@ -44,13 +43,16 @@ private:
     EthernetStandard eth_type;
     Layer2 protocol;
     Layer3 p2;
+    Packet data;
 
     const uint8_t* set_ethernet_type(const uint8_t* packet_body);
 };
 
 
-void PrintMACAddress(std::ostream& os, const uint8_t* address);
-void PrintIPAddress(std::ostream& os, const uint8_t* address);
+void print_mac_address(std::ostream& os, const uint8_t* address);
+void print_ip_address(std::ostream& os, const uint8_t* address);
+
 std::ostream& operator<<(std::ostream& os, const Packet& packet);
 std::ostream& operator<<(std::ostream& os, const EthernetStandard& standard);
 std::ostream& operator<<(std::ostream& os, const ProcessedInfo& info);
+std::ostream& operator<<(std::ostream& os, const std::vector<ProcessedInfo>& list);
