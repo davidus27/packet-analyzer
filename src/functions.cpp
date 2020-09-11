@@ -9,6 +9,15 @@
 #include "constants.hpp"
 #include "functions.hpp"
 
+const char* configurations[] = {
+    "configs/ethertypes.config",
+    "configs/ip.config",
+    "configs/lsap.config",
+    "configs/tcp.config",
+    "configs/udp.config"
+};
+
+
 uint16_t big_endian_to_small(uint16_t value) { return (((value & 0xff)<<8) | ((value & 0xff00)>>8)); }
 
 
@@ -38,14 +47,17 @@ const uint8_t* ProcessedInfo::set_ethernet_type(const uint8_t* packet_body)
     if(*(uint16_t*)(packet_body + Ethernet::IPX_OFFSET) == 0xffff)
     {
         this->eth_type = EthernetStandard::NovellRAW;
+        return nullptr;
         return data + 3; // 3 bytes of IPX header
     }
     if( *(uint16_t*)(packet_body + Ethernet::SAP_OFFSET) == 0xaaaa)
     {
         this->eth_type = EthernetStandard::IEEE_LLC_SNAP;
+        return nullptr;
         return data + 3; // 3 bytes: DSAP + SSAP + Control
     }
     this->eth_type = EthernetStandard::IEEE_LLC;
+    return nullptr;
     return data + 8; // 8 bytes: DSAP + SSAP + Control + Vendor + EtherType
 }
 
@@ -58,9 +70,12 @@ ProcessedInfo::ProcessedInfo(const struct pcap_pkthdr* packet_header, const uint
         this->mac_src[i] = packet_body[i+Ethernet::MAC_SIZE];
     }
     this->set_ethernet_type(packet_body);
-    //const uint8_t* data_p = set_ethernet_type(packet_body);
-    // TODO: find protocol etc 
-
+    const uint8_t* data_start = set_ethernet_type(packet_body);
+    if(data_start)
+    {
+        //for(auto& conf_pair : load_configurations(""))
+    }
+    
 }
 
 ProcessedInfo::~ProcessedInfo() {}
@@ -102,7 +117,8 @@ std::ostream& operator<<(std::ostream& os, const ProcessedInfo& info)
     print_mac_address(os, info.mac_src);
     os << "Cieľová MAC adresa: ";
     print_mac_address(os, info.mac_dst);
-    os << info.eth_type << '\n';
+    os << info.eth_type << '\n'
+    << info.data << '\n';
     /*
     os << "zdrojová IP adresa: ";
     PrintIPAddress(os, info.ip_src);
