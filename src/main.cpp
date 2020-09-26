@@ -1,9 +1,9 @@
 #include <iostream>
-#include <memory>
 #include <vector>
 
 #include <pcap.h>
-#include "functions.hpp"
+#include <stdint.h> // non-standard data types (uintX_t)
+#include "classes.hpp"
 
 
 void process_packet(

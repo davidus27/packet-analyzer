@@ -1,13 +1,13 @@
 #include <iostream>
 #include <iomanip> // for number formating
-#include <stdint.h> // non-standard data types (uintX_t)
 #include <vector>
 #include <fstream>
 #include <string>
 
-#include <pcap.h>
+//#include <stdint.h> // non-standard data types (uintX_t)
+
 #include "constants.hpp"
-#include "functions.hpp"
+#include "classes.hpp"
 
 const char* configurations[] = {
     "configs/ethertypes.config",
@@ -20,16 +20,6 @@ const char* configurations[] = {
 
 uint16_t big_endian_to_small(uint16_t value) { return (((value & 0xff)<<8) | ((value & 0xff00)>>8)); }
 
-
-Packet::Packet(const struct pcap_pkthdr* packet_header, const uint8_t* packet_body)
-    :real_size{packet_header->len}, captured_size{packet_header->caplen}
-{
-    this->payload.reserve(packet_header->caplen);
-    for(unsigned long i = 0; i < packet_header->caplen; i++)
-    {
-        this->payload.emplace_back(packet_body[i]);
-    }
-}
 
 const uint8_t* ProcessedInfo::set_ethernet_type(const uint8_t* packet_body)
 {
@@ -94,18 +84,6 @@ void print_mac_address(std::ostream& os, const uint8_t* address)
     os << '\n';
 }
 
-std::ostream& operator<<(std::ostream& os, const Packet& packet)
-{
-    for(uint32_t i = 0; i < packet.payload.size(); i++)
-    {
-        os << std::setfill('0') << std::setw(2) << std::hex << (short) packet.payload[i] << ' ';
-        if(!((i+1) % 16)) os << '\n'; 
-        else if(!((i+1) % 8)) os << ' '; 
-    }
-    os << '\n';
-    return os;
-}
-
 
 std::ostream& operator<<(std::ostream& os, const ProcessedInfo& info)
 {
@@ -117,8 +95,8 @@ std::ostream& operator<<(std::ostream& os, const ProcessedInfo& info)
     print_mac_address(os, info.mac_src);
     os << "Cieľová MAC adresa: ";
     print_mac_address(os, info.mac_dst);
-    os << info.eth_type << '\n'
-    << info.data << '\n';
+    os << info.eth_type << '\n';
+    //<< info.data << '\n';
     /*
     os << "zdrojová IP adresa: ";
     PrintIPAddress(os, info.ip_src);
