@@ -40,11 +40,11 @@ private:
     uint8_t mac_src[Ethernet::MAC_SIZE];
     uint8_t ip_dst[Ethernet::IP_SIZE];
     uint8_t ip_src[Ethernet::IP_SIZE];
-    EthernetStandard eth_type;
-    Layer2 protocol;
-    Layer3 p2;
+    EthernetStandard ethernet_standard;
+    std::string ether_type;
     Packet data;
 
+    uint16_t get_ether_type(const uint8_t* packet_body);
     const uint8_t* set_ethernet_type(const uint8_t* packet_body);
 };
 

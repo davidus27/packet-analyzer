@@ -9,6 +9,8 @@
 #include "constants.hpp"
 #include "classes.hpp"
 
+std::vector<std::pair<int, std::string>> load_configurations(const std::string& name);
+
 const char* configurations[] = {
     "configs/ethertypes.config",
     "configs/ip.config",
@@ -20,33 +22,47 @@ const char* configurations[] = {
 
 uint16_t big_endian_to_small(uint16_t value) { return (((value & 0xff)<<8) | ((value & 0xff00)>>8)); }
 
+uint16_t ProcessedInfo::get_ether_type(const uint8_t* packet_body)
+{
+    switch (this->ethernet_standard)
+    {
+        case EthernetStandard::EthernetII:
+            packet_body += Ethernet::ETHER_TYPE_II_OFFSET;
+            break;
+        case EthernetStandard::IEEE_LLC_SNAP:
+            packet_body += Ethernet::ETHER_TYPE_LLC_OFFSET;
+            break;
+        default:
+            return 0;
+    }
+    return big_endian_to_small(*(uint16_t*)(packet_body));
+}
 
 const uint8_t* ProcessedInfo::set_ethernet_type(const uint8_t* packet_body)
 {
     // two byte value stored in the data link layer
-    uint16_t ether_type = big_endian_to_small(*(uint16_t*)(packet_body + Ethernet::ETHER_TYPE_OFFSET)); 
+    uint16_t ether_type = big_endian_to_small(*(uint16_t*)(packet_body + Ethernet::ETHER_TYPE_II_OFFSET)); 
     
     // default start for the Ethernet II standard
-    const uint8_t* data = packet_body + Ethernet::ETHER_TYPE_OFFSET + 1; 
+    const uint8_t* data = packet_body + Ethernet::ETHER_TYPE_II_OFFSET + 1; 
     
     if(ether_type >= 0x800)
     {
-        this->eth_type = EthernetStandard::EthernetII;
+        this->ethernet_standard = EthernetStandard::EthernetII;
         return data; 
     }
     if(*(uint16_t*)(packet_body + Ethernet::IPX_OFFSET) == 0xffff)
     {
-        this->eth_type = EthernetStandard::NovellRAW;
+        this->ethernet_standard = EthernetStandard::NovellRAW;
         return nullptr;
         return data + 3; // 3 bytes of IPX header
     }
     if( *(uint16_t*)(packet_body + Ethernet::SAP_OFFSET) == 0xaaaa)
     {
-        this->eth_type = EthernetStandard::IEEE_LLC_SNAP;
-        return nullptr;
+        this->ethernet_standard = EthernetStandard::IEEE_LLC_SNAP;
         return data + 3; // 3 bytes: DSAP + SSAP + Control
     }
-    this->eth_type = EthernetStandard::IEEE_LLC;
+    this->ethernet_standard = EthernetStandard::IEEE_LLC;
     return nullptr;
     return data + 8; // 8 bytes: DSAP + SSAP + Control + Vendor + EtherType
 }
@@ -59,11 +75,16 @@ ProcessedInfo::ProcessedInfo(const struct pcap_pkthdr* packet_header, const uint
         this->mac_dst[i] = packet_body[i];
         this->mac_src[i] = packet_body[i+Ethernet::MAC_SIZE];
     }
-    this->set_ethernet_type(packet_body);
-    const uint8_t* data_start = set_ethernet_type(packet_body);
+    const uint8_t* data_start = this->set_ethernet_type(packet_body);
     if(data_start)
     {
-        //for(auto& conf_pair : load_configurations(""))
+        for(auto& conf_pair : load_configurations(configurations[0]))
+        {
+            if(conf_pair.first == this->get_ether_type(packet_body))
+            {
+                this->ether_type = conf_pair.second;
+            }
+        }
     }
     
 }
@@ -95,8 +116,9 @@ std::ostream& operator<<(std::ostream& os, const ProcessedInfo& info)
     print_mac_address(os, info.mac_src);
     os << "Cieľová MAC adresa: ";
     print_mac_address(os, info.mac_dst);
-    os << info.eth_type << '\n';
-    //<< info.data << '\n';
+    os << info.ethernet_standard << '\n'
+    << info.ether_type << '\n'
+    << info.data << '\n';
     /*
     os << "zdrojová IP adresa: ";
     PrintIPAddress(os, info.ip_src);
