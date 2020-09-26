@@ -12,7 +12,7 @@ Packet::Packet(const struct pcap_pkthdr* packet_header, const uint8_t* packet_bo
     this->payload.reserve(packet_header->caplen);
     for(unsigned long i = 0; i < packet_header->caplen; i++)
     {
-        this->payload.emplace_back(packet_body[i]);
+        this->payload.push_back(packet_body[i]);
     }
 }
 
