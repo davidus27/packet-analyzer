@@ -37,6 +37,9 @@ public:
 protected:
     uint16_t get_ether_type(const uint8_t* packet_body);
     const uint8_t* set_ethernet_type(const uint8_t* packet_body);
+    void set_network_layer(const uint8_t* packet_body, const std::string& configuration);
+    void set_transport_layer(const uint8_t* data_start, const std::string& configuration);
+    void set_ports(const uint8_t* transport_data_start, const std::string& configuration);
 
 private:
     uint8_t mac_dst[Ethernet::MAC_SIZE];
@@ -54,6 +57,10 @@ private:
     Packet data;
 
 };
+
+
+uint16_t big_endian_to_small(uint16_t value);
+std::vector<std::pair<int, std::string>> load_configurations(const std::string& name);
 
 
 void print_mac_address(std::ostream& os, const uint8_t* address);
