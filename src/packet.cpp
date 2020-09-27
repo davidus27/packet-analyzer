@@ -1,9 +1,9 @@
 #include <iostream>
 #include <iomanip> // for number formating
 #include <vector>
+
 #include <pcap.h>
 
-#include "constants.hpp"
 #include "classes.hpp"
 
 Packet::Packet(const struct pcap_pkthdr* packet_header, const uint8_t* packet_body)
