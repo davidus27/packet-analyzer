@@ -1,6 +1,8 @@
 #include <iostream>
 #include <iomanip> // for number formating
 #include <vector>
+#include <array>
+
 
 #include <pcap.h>
 

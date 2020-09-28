@@ -3,11 +3,12 @@
 #include <vector>
 #include <fstream>
 #include <string>
+#include <array>
 
 //#include <stdint.h> // non-standard data types (uintX_t)
 #include "classes.hpp"
 
-void print_ip_address(std::ostream& os, const uint8_t* address)
+std::ostream& operator<<(std::ostream& os, const std::array<uint8_t, Ethernet::IP_SIZE>& address)
 {
     for(int i = 0; i < Ethernet::IP_SIZE; i++)
     {
@@ -15,16 +16,28 @@ void print_ip_address(std::ostream& os, const uint8_t* address)
         if(i != Ethernet::IP_SIZE-1) os << '.';
     }
     os << '\n';
-
+    return os;
 }
 
-void print_mac_address(std::ostream& os, const uint8_t* address)
+bool operator==(std::array<uint8_t, Ethernet::IP_SIZE>& first, std::array<uint8_t, Ethernet::IP_SIZE>& second)
+{
+    for(long unsigned int i = 0; i < first.size(); i++)
+    {
+        if(first[i] != second[i])
+            return false;
+    }
+    return true;
+}
+
+
+std::ostream& operator<<(std::ostream& os, const std::array<uint8_t, Ethernet::MAC_SIZE>& address)
 {
     for(int i = 0; i < Ethernet::MAC_SIZE; i++)
     {
         os << std::setfill('0') << std::setw(2) << std::hex <<(int) address[i] << ' ';
     }
     os << '\n';
+    return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const std::pair<int, std::string>& pair)
@@ -87,20 +100,20 @@ std::ostream& operator<<(std::ostream& os, const ProcessedInfo& info)
 
     << info.ethernet_standard << '\n'
     
-    << "Zdrojová MAC adresa: ";
-    print_mac_address(os, info.mac_src);
+    << "Zdrojová MAC adresa: "
+    << info.mac_src
 
-    os << "Cieľová MAC adresa: ";
-    print_mac_address(os, info.mac_dst);
+    << "Cieľová MAC adresa: "
+    << info.mac_dst
 
-    os << info.ether_type << '\n'
-    << "Zdrojová IP adresa: ";
-    print_ip_address(os, info.ip_src);
+    << info.ether_type << '\n'
+    << "Zdrojová IP adresa: "
+    << info.ip_src
 
-    os << "Cieľová IP adresa: ";
-    print_ip_address(os, info.ip_dst);
+    << "Cieľová IP adresa: "
+    << info.ip_dst
 
-    os << info.transport_protocol << '\n'
+    << info.transport_protocol << '\n'
     << "Zdrojovy port: "
     << info.src_port 
     << "Cielovy port: "

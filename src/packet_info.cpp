@@ -3,6 +3,8 @@
 #include <vector>
 #include <fstream>
 #include <string>
+#include <array>
+
 
 //#include <stdint.h> // non-standard data types (uintX_t)
 #include "classes.hpp"
@@ -85,8 +87,3 @@ ProcessedInfo::ProcessedInfo(const struct pcap_pkthdr* packet_header, const uint
 }
 
 ProcessedInfo::~ProcessedInfo() {}
-
-
-
-
-

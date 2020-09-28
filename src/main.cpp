@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <array>
 
 #include <pcap.h>
 #include <stdint.h> // non-standard data types (uintX_t)
@@ -18,6 +19,29 @@ void process_packet(
         std::cout << "No packets found\n";
 }
 
+typedef std::array<uint8_t, Ethernet::IP_SIZE> ip;
+
+std::vector<ip> get_unique_addresses(std::vector<ProcessedInfo> packets)
+{
+    std::vector<ip> used;
+    used.push_back(packets[0].ip_src);
+    bool in_use = false;
+    for(auto& packet : packets)
+    {
+        for(unsigned long previous = 0; previous < used.size(); previous++)
+        {
+            if(packet.ip_src == used[previous])
+            {
+                in_use = true;
+                break;
+            }
+        }
+        if(!in_use) used.push_back(packet.ip_src);
+        in_use = false;   
+    }
+    return used;
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -27,10 +51,18 @@ int main(int argc, char *argv[])
         pcap_t* handle = pcap_open_offline(argv[1], errbuf);
         if(handle)
         {
-            std::vector<ProcessedInfo> packets = std::vector<ProcessedInfo>();
+            std::vector<ProcessedInfo> packets = std::vector<ProcessedInfo>();            
             pcap_loop(handle, 0, (pcap_handler)process_packet, (uint8_t*)&packets);
             pcap_close(handle);
             std::cout << packets << '\n';
+            
+            // Another part of assignment
+            std::cout << " IP adresy vysielajucich uzlov:\n";
+            for(auto& address : get_unique_addresses(packets))
+            {
+                std::cout << address;
+            }
+            
         }
         else
         {

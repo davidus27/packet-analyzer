@@ -33,6 +33,7 @@ public:
     ProcessedInfo(const struct pcap_pkthdr* packet_header, const uint8_t* packet_body);
     ~ProcessedInfo();
     friend std::ostream& operator<<(std::ostream& os, const ProcessedInfo& packet);
+    std::array<uint8_t, Ethernet::IP_SIZE> ip_src;
 
 protected:
     uint16_t get_ether_type(const uint8_t* packet_body);
@@ -42,10 +43,9 @@ protected:
     void set_ports(const uint8_t* transport_data_start, const std::string& configuration);
 
 private:
-    uint8_t mac_dst[Ethernet::MAC_SIZE];
-    uint8_t mac_src[Ethernet::MAC_SIZE];
-    uint8_t ip_dst[Ethernet::IP_SIZE];
-    uint8_t ip_src[Ethernet::IP_SIZE];
+    std::array<uint8_t, Ethernet::MAC_SIZE> mac_dst;
+    std::array<uint8_t, Ethernet::MAC_SIZE> mac_src;
+    std::array<uint8_t, Ethernet::IP_SIZE> ip_dst;
     EthernetStandard ethernet_standard;
     std::string ether_type;
     std::string transport_protocol;
@@ -63,10 +63,9 @@ uint16_t big_endian_to_small(uint16_t value);
 std::vector<std::pair<int, std::string>> load_configurations(const std::string& name);
 
 
-void print_mac_address(std::ostream& os, const uint8_t* address);
-void print_ip_address(std::ostream& os, const uint8_t* address);
-
 std::ostream& operator<<(std::ostream& os, const Packet& packet);
 std::ostream& operator<<(std::ostream& os, const EthernetStandard& standard);
 std::ostream& operator<<(std::ostream& os, const ProcessedInfo& info);
 std::ostream& operator<<(std::ostream& os, const std::vector<ProcessedInfo>& list);
+std::ostream& operator<<(std::ostream& os, const std::array<uint8_t, Ethernet::MAC_SIZE>& address);
+std::ostream& operator<<(std::ostream& os, const std::array<uint8_t, Ethernet::IP_SIZE>& address);
