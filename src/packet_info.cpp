@@ -16,18 +16,19 @@ const char* configurations[] = {
     "configs/udp.config"
 };
 
+constexpr short CONFIGS_AMOUNT = 4;
 
-const std::vector<std::vector<std::pair<int, std::string>>> get_confs()
+const std::array<std::vector<std::pair<int, std::string>>, CONFIGS_AMOUNT> get_confs()
 {
-    std::vector<std::vector<std::pair<int, std::string>>> confs;
-    for(int i = 0; i < 4; i++)
+    std::array<std::vector<std::pair<int, std::string>>, CONFIGS_AMOUNT> confs;
+    for(int  i = 0; i < CONFIGS_AMOUNT; i++)
     {
-        confs.push_back(load_configurations(configurations[i]));
+        confs[i] = load_configurations(configurations[i]);
     }
     return confs;
 }
 
-const std::vector<std::vector<std::pair<int, std::string>>> loaded_configuration = get_confs();
+const std::array<std::vector<std::pair<int, std::string>>, 4> loaded_configuration = get_confs();
 
 const uint8_t* ProcessedInfo::set_ethernet_type(const uint8_t* packet_body)
 {
