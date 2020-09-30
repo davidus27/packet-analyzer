@@ -15,7 +15,7 @@ std::ostream& operator<<(std::ostream& os, const std::array<uint8_t, Ethernet::I
         os << std::dec << (int) address[i];
         if(i != Ethernet::IP_SIZE-1) os << '.';
     }
-    os << '\n';
+    //os << '\n';
     return os;
 }
 
