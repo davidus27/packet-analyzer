@@ -16,16 +16,6 @@ Packet::Packet(const struct pcap_pkthdr* packet_header, const uint8_t* packet_bo
     {
         this->payload.push_back(packet_body[i]);
     }
+ 
 }
 
-std::ostream& operator<<(std::ostream& os, const Packet& packet)
-{
-    for(uint32_t i = 0; i < packet.payload.size(); i++)
-    {
-        os << std::setfill('0') << std::setw(2) << std::hex << (short) packet.payload[i] << ' ';
-        if(!((i+1) % 16)) os << '\n'; 
-        else if(!((i+1) % 8)) os << ' '; 
-    }
-    os << '\n';
-    return os;
-}

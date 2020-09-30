@@ -17,6 +17,18 @@ const char* configurations[] = {
 };
 
 
+const std::vector<std::vector<std::pair<int, std::string>>> get_confs()
+{
+    std::vector<std::vector<std::pair<int, std::string>>> confs;
+    for(int i = 0; i < 4; i++)
+    {
+        confs.push_back(load_configurations(configurations[i]));
+    }
+    return confs;
+}
+
+const std::vector<std::vector<std::pair<int, std::string>>> loaded_configuration = get_confs();
+
 const uint8_t* ProcessedInfo::set_ethernet_type(const uint8_t* packet_body)
 {
     // two byte value stored in the data link layer
@@ -54,14 +66,13 @@ ProcessedInfo::ProcessedInfo(const struct pcap_pkthdr* packet_header, const uint
         this->mac_dst[i] = packet_body[i];
         this->mac_src[i] = packet_body[i+Ethernet::MAC_SIZE];
     }
-
     const uint8_t* data_start = this->set_ethernet_type(packet_body);
+    
     if(data_start)
     {
-        this->set_network_layer(packet_body, configurations[0]);
+        this->set_network_layer(packet_body, loaded_configuration[0]);
         // Getting TCP/UDP/ICMP
-        this->set_transport_layer(data_start, configurations[1]);
-
+        this->set_transport_layer(data_start, loaded_configuration[1]);
         // Save IP addresses
         for(int i = 0; i < Ethernet::IP_SIZE; i++)
         {
@@ -73,14 +84,14 @@ ProcessedInfo::ProcessedInfo(const struct pcap_pkthdr* packet_header, const uint
         // Size is in octets so multiply by 4
         uint8_t ihl_value = data_start[0] & 0xf;
         const uint8_t* transport_data_start = data_start + (ihl_value * 4);
-
+        
         if(this->transport_protocol == "TCP")
         {
-            this->set_ports(transport_data_start, configurations[2]);
+            this->set_ports(transport_data_start, loaded_configuration[2]);
         }
         else if(this->transport_protocol == "UDP")
         {
-            this->set_ports(transport_data_start, configurations[3]);    
+            this->set_ports(transport_data_start, loaded_configuration[3]);    
         }
     }
     

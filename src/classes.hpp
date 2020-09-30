@@ -38,9 +38,9 @@ public:
 protected:
     uint16_t get_ether_type(const uint8_t* packet_body);
     const uint8_t* set_ethernet_type(const uint8_t* packet_body);
-    void set_network_layer(const uint8_t* packet_body, const std::string& configuration);
-    void set_transport_layer(const uint8_t* data_start, const std::string& configuration);
-    void set_ports(const uint8_t* transport_data_start, const std::string& configuration);
+    void set_network_layer(const uint8_t* packet_body, const std::vector<std::pair<int, std::string>>& configuration);
+    void set_transport_layer(const uint8_t* data_start, const std::vector<std::pair<int, std::string>>& configuration);
+    void set_ports(const uint8_t* transport_data_start, const std::vector<std::pair<int, std::string>>& configuration);
 
 private:
     std::array<uint8_t, Ethernet::MAC_SIZE> mac_dst;

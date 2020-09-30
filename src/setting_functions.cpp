@@ -51,10 +51,10 @@ uint16_t ProcessedInfo::get_ether_type(const uint8_t* packet_body)
     return big_endian_to_small(*(uint16_t*)(packet_body));
 }
 
-void ProcessedInfo::set_network_layer(const uint8_t* packet_body, const std::string& configuration)
+void ProcessedInfo::set_network_layer(const uint8_t* packet_body, const std::vector<std::pair<int, std::string>>& configuration)
 {
     // Getting IP
-    for(auto& conf_pair : load_configurations(configuration))
+    for(auto& conf_pair : configuration)
     {
         if(conf_pair.first == get_ether_type(packet_body))
         {
@@ -63,9 +63,9 @@ void ProcessedInfo::set_network_layer(const uint8_t* packet_body, const std::str
     }
 }
 
-void ProcessedInfo::set_transport_layer(const uint8_t* data_start, const std::string& configuration)
+void ProcessedInfo::set_transport_layer(const uint8_t* data_start, const std::vector<std::pair<int, std::string>>& configuration)
 {
-    for(auto& conf_pair : load_configurations(configuration))
+    for(auto& conf_pair : configuration)
     {
         if(conf_pair.first == data_start[9]) // 9 bytes of IP Header
         {
@@ -73,9 +73,9 @@ void ProcessedInfo::set_transport_layer(const uint8_t* data_start, const std::st
         }
     }
 }
-void ProcessedInfo::set_ports(const uint8_t* transport_data_start, const std::string& configuration)
+void ProcessedInfo::set_ports(const uint8_t* transport_data_start, const std::vector<std::pair<int, std::string>>& configuration)
 {
-    for(auto& conf_pair : load_configurations(configuration)) // Check TCP config
+    for(auto& conf_pair : configuration) // Check TCP config
     {
         if(conf_pair.first == big_endian_to_small(*(uint16_t*)transport_data_start))
         {

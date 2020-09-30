@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <array>
+#include <fstream>
 
 #include <pcap.h>
 #include <stdint.h> // non-standard data types (uintX_t)
@@ -15,6 +16,8 @@ void process_packet(
 {
     if(packet_body)
         args.push_back(ProcessedInfo{packet_header, packet_body});
+        //args.push_back(ProcessedInfo());
+
     else
         std::cout << "No packets found\n";
 }
@@ -42,6 +45,7 @@ std::vector<ip> get_unique_addresses(std::vector<ProcessedInfo> packets)
     return used;
 }
 
+void inc(int& a){a++;}
 
 int main(int argc, char *argv[])
 {
@@ -51,18 +55,27 @@ int main(int argc, char *argv[])
         pcap_t* handle = pcap_open_offline(argv[1], errbuf);
         if(handle)
         {
-            std::vector<ProcessedInfo> packets = std::vector<ProcessedInfo>();            
+            std::vector<ProcessedInfo> packets = std::vector<ProcessedInfo>();
+            int sum = 0;
+            pcap_loop(handle, 0, (pcap_handler)inc, (uint8_t*)&sum);
+            handle = pcap_open_offline(argv[1], errbuf);
+            packets.reserve(sum);          
+            
             pcap_loop(handle, 0, (pcap_handler)process_packet, (uint8_t*)&packets);
             pcap_close(handle);
-            std::cout << packets << '\n';
+            
+            std::ofstream myfile;
+            myfile.open("skuska.txt");
+            myfile << packets;
+            //std::cout << packets << '\n';
             
             // Another part of assignment
-            std::cout << " IP adresy vysielajucich uzlov:\n";
+            myfile << " IP adresy vysielajucich uzlov:\n";
             for(auto& address : get_unique_addresses(packets))
             {
-                std::cout << address;
+                myfile << address;
             }
-            
+            myfile.close();
         }
         else
         {

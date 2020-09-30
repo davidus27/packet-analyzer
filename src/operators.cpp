@@ -89,6 +89,17 @@ std::ostream& operator<<(std::ostream& os, const EthernetStandard& standard)
     return os;
 }
 
+std::ostream& operator<<(std::ostream& os, const Packet& packet)
+{
+    for(uint32_t i = 0; i < packet.payload.size(); i++)
+    {
+        os << std::setfill('0') << std::setw(2) << std::hex << (short) packet.payload[i] << ' ';
+        if(!((i+1) % 16)) os << '\n'; 
+        else if(!((i+1) % 8)) os << ' '; 
+    }
+    os << '\n';
+    return os;
+}
 
 std::ostream& operator<<(std::ostream& os, const ProcessedInfo& info)
 {
