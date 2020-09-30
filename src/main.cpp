@@ -56,11 +56,7 @@ int main(int argc, char *argv[])
         if(handle)
         {
             std::vector<ProcessedInfo> packets = std::vector<ProcessedInfo>();
-            int sum = 0;
-            pcap_loop(handle, 0, (pcap_handler)inc, (uint8_t*)&sum);
-            handle = pcap_open_offline(argv[1], errbuf);
-            packets.reserve(sum);          
-            
+
             pcap_loop(handle, 0, (pcap_handler)process_packet, (uint8_t*)&packets);
             pcap_close(handle);
             
