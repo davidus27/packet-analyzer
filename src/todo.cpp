@@ -7,12 +7,10 @@
 #include <pcap.h>
 #include "classes.hpp"
 
-typedef std::pair<std::array<uint8_t, Ethernet::IP_SIZE>, int> ip;
 
-
-std::vector<ip> get_unique_addresses(const std::vector<ProcessedInfo>& packets)
+std::vector<std::pair<IP, int>> get_unique_addresses(const std::vector<ProcessedInfo>& packets)
 {
-    std::vector<ip> used;
+    std::vector<std::pair<IP, int>> used;
     used.push_back({packets[0].ip_src, 1});
     bool in_use = false;
     for(auto& packet : packets)
@@ -35,7 +33,7 @@ std::vector<ip> get_unique_addresses(const std::vector<ProcessedInfo>& packets)
 void print_ip_addresses(std::ostream& os, const std::vector<ProcessedInfo>& packets)
 {
     os << "IP adresy vysielajucich uzlov:\n";
-    ip most_frequent;
+    std::pair<IP, int> most_frequent;
     for(auto& address : get_unique_addresses(packets))
     {
         os << address.first << '\n';
@@ -47,14 +45,22 @@ void print_ip_addresses(std::ostream& os, const std::vector<ProcessedInfo>& pack
 }
 
 
+
 void print_communications(std::ostream& os, const std::vector<ProcessedInfo>& packets, const std::string& protocol)
 {
-    for(auto& packet : packets)
+    std::pair<IP, IP> binding;
+    for(unsigned long i = 0; i < packets.size(); i++)
     {
-        if(packet.application_protocol == "HTTP")
+        if(packets[i].is_starting()) 
         {
-            os << "Found one!\n";
+            binding.first = packets[i].ip_dst;
+            binding.second = packets[i].ip_src;
+            for(unsigned long j = i; j < packets.size(); j++)
+            {
+                if(packets[j].found_binding(binding)) os << packets;
+                if(packets[j].is_ending()) break;
+            }
         }
     }
-
+    
 }

@@ -24,9 +24,9 @@ void process_packet(
 }
 
 
-void execute(std::ostream& file, const std::vector<ProcessedInfo>& packets)
+void execute_asked_function(std::ostream& file, const std::vector<ProcessedInfo>& packets)
 {
-    std::cout << "Which part of assignment do you what to execute?\n";
+    std::cout << "Which part of assignment do you what to execute_asked_function?\n";
     std::cout << "1. Print all packets.\n";
     std::cout << "2. Print unique source IP addresses.\n";
     std::cout << "3. Print all communications of specific protocol.\n";
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
             if(argc == 3) file.open(argv[2]);
             else file.open(DEFAULT_FILENAME);
             
-            execute(file, packets);
+            execute_asked_function(file, packets);
             file.close();
         }
         else

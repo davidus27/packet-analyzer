@@ -27,17 +27,24 @@ struct Packet
     Packet(const struct pcap_pkthdr* packet_header, const uint8_t* packet_body);
 };
 
+typedef std::array<uint8_t, Ethernet::IP_SIZE> IP;
+typedef std::array<uint8_t, Ethernet::MAC_SIZE> MAC;
+
+
 struct ProcessedInfo
 {
 public:
     ProcessedInfo(const struct pcap_pkthdr* packet_header, const uint8_t* packet_body);
     ~ProcessedInfo();
-    //friend std::ostream& operator<<(std::ostream& os, const ProcessedInfo& packet);
+    bool found_binding(std::pair<IP, IP> binding) const;
+    bool is_starting() const;
+    bool is_ending() const;
+    
 
-    std::array<uint8_t, Ethernet::IP_SIZE> ip_src;
-    std::array<uint8_t, Ethernet::MAC_SIZE> mac_dst;
-    std::array<uint8_t, Ethernet::MAC_SIZE> mac_src;
-    std::array<uint8_t, Ethernet::IP_SIZE> ip_dst;
+    MAC mac_dst;
+    MAC mac_src;
+    IP ip_dst;
+    IP ip_src;
     EthernetStandard ethernet_standard;
 
     // should use Short String Optimization, so no allocation
