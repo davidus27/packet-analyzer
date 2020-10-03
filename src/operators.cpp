@@ -119,10 +119,10 @@ std::ostream& operator<<(std::ostream& os, const ProcessedInfo& info)
 
     << info.ether_type << '\n'
     << "Zdrojová IP adresa: "
-    << info.ip_src
+    << info.ip_src << '\n'
 
     << "Cieľová IP adresa: "
-    << info.ip_dst
+    << info.ip_dst << '\n'
 
     << info.transport_protocol << '\n'
     << "Zdrojovy port: "

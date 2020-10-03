@@ -2,11 +2,14 @@
 #include <vector>
 #include <array>
 #include <fstream>
+#include <string>
 
 #include <pcap.h>
 #include <stdint.h> // non-standard data types (uintX_t)
 #include "classes.hpp"
 
+
+const char* DEFAULT_FILENAME = "program_output.txt";
 
 void process_packet(
     std::vector<ProcessedInfo>& args,
@@ -20,45 +23,47 @@ void process_packet(
         std::cout << "No packets found\n";
 }
 
-typedef std::pair<std::array<uint8_t, Ethernet::IP_SIZE>, int> ip;
 
-std::vector<ip> get_unique_addresses(std::vector<ProcessedInfo> packets)
+void execute(std::ostream& file, const std::vector<ProcessedInfo>& packets)
 {
-    std::vector<ip> used;
-    used.push_back({packets[0].ip_src, 1});
-    bool in_use = false;
-    for(auto& packet : packets)
+    std::cout << "Which part of assignment do you what to execute?\n";
+    std::cout << "1. Print all packets.\n";
+    std::cout << "2. Print unique source IP addresses.\n";
+    std::cout << "3. Print all communications of specific protocol.\n";
+    std::cout << "4. Don't know what is fourth one yet >.<\n";
+    std::cout << "Input your option[1-4]: ";
+    int input;
+    std::cin >> input;
+
+    switch (input)
     {
-        for(unsigned long previous = 0; previous < used.size(); previous++)
+        case 1:
+            file << packets << '\n';
+            break;
+        case 2:
+            print_ip_addresses(file, packets);
+            break;
+        
+        case 3:
         {
-            if(packet.ip_src == used[previous].first)
-            {
-                used[previous].second++;
-                in_use = true;
-                break;
-            }
+            std::cout << "What protocol do you want to print? ";
+            std::string protocol; // Too lazy to change to lowercases...
+            // gets only word, not whole line
+            // in the case of problem use geline(cin, protocol) instead
+            std::cin >> protocol; 
+            print_communications(file, packets, protocol);
+            break;
         }
-        if(!in_use) used.push_back({packet.ip_src, 1});
-        in_use = false;   
+
+        default:
+        {
+            std::cout << "Wrong input. Executing default case.\n";
+            file << packets << '\n';
+            break;
+        }
     }
-    return used;
 }
 
-void print_ip_addresses(std::ostream& os, std::vector<ProcessedInfo> packets)
-{
-    os << "IP adresy vysielajucich uzlov:\n";
-    ip most_frequent;
-    for(auto& address : get_unique_addresses(packets))
-    {
-        os << address.first << '\n';
-        if(address.second > most_frequent.second) most_frequent = address;
-    }
-    os << "Adresa " << most_frequent.first 
-    << " ma najväčší počet odoslaných paketov: " 
-    << most_frequent.second << ".\n";
-}
-
-void inc(int& a){a++;}
 
 int main(int argc, char *argv[])
 {
@@ -72,16 +77,14 @@ int main(int argc, char *argv[])
 
             pcap_loop(handle, 0, (pcap_handler)process_packet, (uint8_t*)&packets);
             pcap_close(handle);
-            
-    
-            std::ofstream myfile;
-            myfile.open("skuska.txt");
-            myfile << packets;
 
-            // Another part of assignment
-            print_ip_addresses(myfile, packets);
-    
-            myfile.close();
+            // Declaring ofstream to save program output to file
+            std::ofstream file;
+            if(argc == 3) file.open(argv[2]);
+            else file.open(DEFAULT_FILENAME);
+            
+            execute(file, packets);
+            file.close();
         }
         else
         {

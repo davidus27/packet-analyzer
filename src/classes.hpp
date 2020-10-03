@@ -47,9 +47,11 @@ private:
     std::array<uint8_t, Ethernet::MAC_SIZE> mac_src;
     std::array<uint8_t, Ethernet::IP_SIZE> ip_dst;
     EthernetStandard ethernet_standard;
+
+    // should use Short String Optimization, so no allocation
     std::string ether_type;
     std::string transport_protocol;
-    std::string  application_protocol;
+    std::string application_protocol;
 
     std::pair<uint16_t, std::string> src_port; // value and name of source port
     std::pair<uint16_t, std::string> dst_port; // value and name of destination port 
@@ -61,6 +63,12 @@ private:
 
 uint16_t big_endian_to_small(uint16_t value);
 std::vector<std::pair<int, std::string>> load_configurations(const std::string& name);
+
+// Functions for main execution
+// What do user want to execute
+void print_ip_addresses(std::ostream& os, const std::vector<ProcessedInfo>& packets);
+void print_communications(std::ostream& os, const std::vector<ProcessedInfo>& packets, const std::string& protocol);
+
 
 
 std::ostream& operator<<(std::ostream& os, const Packet& packet);
