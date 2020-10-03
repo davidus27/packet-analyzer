@@ -46,6 +46,8 @@ public:
     IP ip_dst;
     IP ip_src;
     EthernetStandard ethernet_standard;
+    bool syn = false;
+    bool fin = false;
 
     // should use Short String Optimization, so no allocation
     std::string ether_type;

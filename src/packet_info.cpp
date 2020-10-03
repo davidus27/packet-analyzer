@@ -90,15 +90,27 @@ ProcessedInfo::ProcessedInfo(const struct pcap_pkthdr* packet_header, const uint
         // Size is in octets so multiply by 4
         uint8_t ihl_value = data_start[0] & 0xf;
         const uint8_t* transport_data_start = data_start + (ihl_value * 4);
-        
         if(this->transport_protocol == "TCP")
         {
             this->set_ports(transport_data_start, loaded_configuration[2]);
+            
+            if(transport_data_start[13] & 1)
+            {
+                // FIN
+                this->fin = true;
+
+            }
+            else if(transport_data_start[13] & 2)
+            {
+                // SYN
+                this->syn = true;
+            }
         }
         else if(this->transport_protocol == "UDP")
         {
             this->set_ports(transport_data_start, loaded_configuration[3]);    
         }
+        
     }
     
 }
