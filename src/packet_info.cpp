@@ -80,6 +80,11 @@ ProcessedInfo::ProcessedInfo(const struct pcap_pkthdr* packet_header, const uint
             this->ip_src[i] = data_start[i+12];
             this->ip_dst[i] = data_start[i+16];
         }
+        if(this->ether_type == "ARP")
+        {
+            if(data_start[7] == 1) this->ether_type.append("-REQUEST");
+            else if(data_start[7] == 2) this->ether_type.append("-REPLY");
+        }
 
         // Shift by size of IPv4 header from IHL value.
         // Size is in octets so multiply by 4
