@@ -79,13 +79,17 @@ void ProcessedInfo::set_ports(const uint8_t* transport_data_start, const std::ve
     {
         if(conf_pair.first == big_endian_to_small(*(uint16_t*)transport_data_start))
         {
-            this->src_port = conf_pair;
+            this->src_port = conf_pair.first;
+            this->application_protocol = conf_pair.second;
+            break;
         }
         if(conf_pair.first == big_endian_to_small(*(uint16_t*)(transport_data_start+2)))
         {
-            this->dst_port = conf_pair;
+            this->dst_port = conf_pair.first;
+            this->application_protocol = conf_pair.second;
+            break;
         }
     }
-    if(!this->src_port.first) this->src_port.first = big_endian_to_small(*(uint16_t*)transport_data_start);
-    if(!this->dst_port.first) this->dst_port.first = big_endian_to_small(*(uint16_t*)(transport_data_start+2));
+    if(!this->src_port) this->src_port = big_endian_to_small(*(uint16_t*)transport_data_start);
+    if(!this->dst_port) this->dst_port = big_endian_to_small(*(uint16_t*)(transport_data_start+2));
 }

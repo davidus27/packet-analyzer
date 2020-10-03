@@ -125,10 +125,11 @@ std::ostream& operator<<(std::ostream& os, const ProcessedInfo& info)
     << info.ip_dst << '\n'
 
     << info.transport_protocol << '\n'
+    << info.application_protocol <<'\n'
     << "Zdrojovy port: "
-    << info.src_port 
+    << (int)info.src_port << '\n'
     << "Cielovy port: "
-    << info.dst_port
+    << (int)info.dst_port << '\n'
     
     << info.data << '\n';
     return os;

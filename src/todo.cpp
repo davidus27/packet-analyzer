@@ -49,5 +49,12 @@ void print_ip_addresses(std::ostream& os, const std::vector<ProcessedInfo>& pack
 
 void print_communications(std::ostream& os, const std::vector<ProcessedInfo>& packets, const std::string& protocol)
 {
+    for(auto& packet : packets)
+    {
+        if(packet.application_protocol == "HTTP")
+        {
+            os << "Found one!\n";
+        }
+    }
 
 }

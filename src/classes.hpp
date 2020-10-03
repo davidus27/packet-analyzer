@@ -32,17 +32,9 @@ struct ProcessedInfo
 public:
     ProcessedInfo(const struct pcap_pkthdr* packet_header, const uint8_t* packet_body);
     ~ProcessedInfo();
-    friend std::ostream& operator<<(std::ostream& os, const ProcessedInfo& packet);
+    //friend std::ostream& operator<<(std::ostream& os, const ProcessedInfo& packet);
+
     std::array<uint8_t, Ethernet::IP_SIZE> ip_src;
-
-protected:
-    uint16_t get_ether_type(const uint8_t* packet_body);
-    const uint8_t* set_ethernet_type(const uint8_t* packet_body);
-    void set_network_layer(const uint8_t* packet_body, const std::vector<std::pair<int, std::string>>& configuration);
-    void set_transport_layer(const uint8_t* data_start, const std::vector<std::pair<int, std::string>>& configuration);
-    void set_ports(const uint8_t* transport_data_start, const std::vector<std::pair<int, std::string>>& configuration);
-
-private:
     std::array<uint8_t, Ethernet::MAC_SIZE> mac_dst;
     std::array<uint8_t, Ethernet::MAC_SIZE> mac_src;
     std::array<uint8_t, Ethernet::IP_SIZE> ip_dst;
@@ -53,11 +45,17 @@ private:
     std::string transport_protocol;
     std::string application_protocol;
 
-    std::pair<uint16_t, std::string> src_port; // value and name of source port
-    std::pair<uint16_t, std::string> dst_port; // value and name of destination port 
+    uint16_t src_port; // value of source port
+    uint16_t dst_port; // value of destination port 
     
     Packet data;
 
+private:
+    uint16_t get_ether_type(const uint8_t* packet_body);
+    const uint8_t* set_ethernet_type(const uint8_t* packet_body);
+    void set_network_layer(const uint8_t* packet_body, const std::vector<std::pair<int, std::string>>& configuration);
+    void set_transport_layer(const uint8_t* data_start, const std::vector<std::pair<int, std::string>>& configuration);
+    void set_ports(const uint8_t* transport_data_start, const std::vector<std::pair<int, std::string>>& configuration);
 };
 
 
