@@ -72,45 +72,54 @@ ProcessedInfo::ProcessedInfo(const struct pcap_pkthdr* packet_header, const uint
     if(data_start)
     {
         this->set_network_layer(packet_body, loaded_configuration[0]);
-        // Getting TCP/UDP/ICMP
-        this->set_transport_layer(data_start, loaded_configuration[1]);
-        // Save IP addresses
-        for(int i = 0; i < Ethernet::IP_SIZE; i++)
-        {
-            this->ip_src[i] = data_start[i+12];
-            this->ip_dst[i] = data_start[i+16];
-        }
+
         if(this->ether_type == "ARP")
         {
             if(data_start[7] == 1) this->ether_type.append("-REQUEST");
             else if(data_start[7] == 2) this->ether_type.append("-REPLY");
-        }
 
-        // Shift by size of IPv4 header from IHL value.
-        // Size is in octets so multiply by 4
-        uint8_t ihl_value = data_start[0] & 0xf;
-        const uint8_t* transport_data_start = data_start + (ihl_value * 4);
-        if(this->transport_protocol == "TCP")
-        {
-            this->set_ports(transport_data_start, loaded_configuration[2]);
-            
-            if(transport_data_start[13] & 1)
+            // Save IP addresses from ARP
+            for(int i = 0; i < Ethernet::IP_SIZE; i++)
             {
-                // FIN
-                this->fin = true;
-
-            }
-            else if(transport_data_start[13] & 2)
-            {
-                // SYN
-                this->syn = true;
+                this->ip_src[i] = data_start[i+14];
+                this->ip_dst[i] = data_start[i+24]; // not sure, but works
             }
         }
-        else if(this->transport_protocol == "UDP")
+        else
         {
-            this->set_ports(transport_data_start, loaded_configuration[3]);    
+            // Getting TCP/UDP/ICMP
+            this->set_transport_layer(data_start, loaded_configuration[1]);
+            // Save IP addresses from IPv4
+            for(int i = 0; i < Ethernet::IP_SIZE; i++)
+            {
+                this->ip_src[i] = data_start[i+12];
+                this->ip_dst[i] = data_start[i+16];
+            }
+            // Shift by size of IPv4 header from IHL value.
+            // Size is in octets so multiply by 4
+            uint8_t ihl_value = data_start[0] & 0xf;
+            const uint8_t* transport_data_start = data_start + (ihl_value * 4);
+            if(this->transport_protocol == "TCP")
+            {
+                this->set_ports(transport_data_start, loaded_configuration[2]);
+                
+                if(transport_data_start[13] & 1)
+                {
+                    // FIN
+                    this->fin = true;
+
+                }
+                else if(transport_data_start[13] & 2)
+                {
+                    // SYN
+                    this->syn = true;
+                }
+            }
+            else if(this->transport_protocol == "UDP")
+            {
+                this->set_ports(transport_data_start, loaded_configuration[3]);    
+            }
         }
-        
     }
     
 }

@@ -36,9 +36,9 @@ struct ProcessedInfo
 public:
     ProcessedInfo(const struct pcap_pkthdr* packet_header, const uint8_t* packet_body);
     ~ProcessedInfo();
-    bool found_binding(std::pair<IP, IP> binding) const;
-    bool is_starting() const;
-    bool is_ending() const;
+    bool found_binding(std::pair<IP, IP> binding, const std::string& protocol) const;
+    bool is_starting(const std::string& protocol) const;
+    bool is_ending(const std::string& protocol) const;
     
 
     MAC mac_dst;
@@ -54,8 +54,8 @@ public:
     std::string transport_protocol;
     std::string application_protocol;
 
-    uint16_t src_port; // value of source port
-    uint16_t dst_port; // value of destination port 
+    uint16_t src_port = 0; // value of source port
+    uint16_t dst_port = 0; // value of destination port 
     
     Packet data;
 

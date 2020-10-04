@@ -9,24 +9,28 @@
 
 uint16_t big_endian_to_small(uint16_t value) { return (((value & 0xff)<<8) | ((value & 0xff00)>>8)); }
 
-bool ProcessedInfo::is_starting() const
+bool ProcessedInfo::is_starting(const std::string& protocol) const
 {
     // returns if packet is starting new communication
-    
+    if(protocol == "HTTP" || protocol == "HTTPS") return this->syn;
+    if(protocol == "ARP") return this->ether_type == "ARP-REQUEST";
     return false;
 }
 
 
-bool ProcessedInfo::is_ending() const
+bool ProcessedInfo::is_ending(const std::string& protocol) const
 {
     // returns if packet is ending existing communication
+    if(protocol == "HTTP" || protocol == "HTTPS") return this->fin;
+    if(protocol == "ARP") return this->ether_type == "ARP-REPLY";
     return false;
 }
 
-bool ProcessedInfo::found_binding(std::pair<IP, IP> binding) const
+bool ProcessedInfo::found_binding(std::pair<IP, IP> binding, const std::string& protocol) const
 {
     // Checks if packet belong to the communication
-    if(binding.first == this->ip_dst && binding.second == this->ip_src)
+    if((binding.first == this->ip_dst || binding.first == this->ip_src) &&
+        (binding.second == this->ip_dst || binding.second == this->ip_src))
         return true;
     return false;
 }

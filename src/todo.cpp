@@ -49,16 +49,22 @@ void print_ip_addresses(std::ostream& os, const std::vector<ProcessedInfo>& pack
 void print_communications(std::ostream& os, const std::vector<ProcessedInfo>& packets, const std::string& protocol)
 {
     std::pair<IP, IP> binding;
+    unsigned long communication_num = 1;
     for(unsigned long i = 0; i < packets.size(); i++)
     {
-        if(packets[i].is_starting()) 
+        if(packets[i].is_starting(protocol)) 
         {
+            os << "Komunikacia c." << std::dec << communication_num++ << '\n';
             binding.first = packets[i].ip_dst;
             binding.second = packets[i].ip_src;
             for(unsigned long j = i; j < packets.size(); j++)
             {
-                if(packets[j].found_binding(binding)) os << packets;
-                if(packets[j].is_ending()) break;
+                if(packets[j].found_binding(binding, protocol)) 
+                {
+                    os << "Ramec " << std::dec << j + 1 << '\n';
+                    os << packets[j];
+                }
+                if(packets[j].is_ending(protocol)) break;
             }
         }
     }
