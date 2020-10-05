@@ -44,12 +44,6 @@ void print_ip_addresses(std::ostream& os, const std::vector<ProcessedInfo>& pack
     << most_frequent.second << ".\n";
 }
 
-bool ProcessedInfo::is_using(const std::string& protocol) const
-{
-    // true, if protocol is used in the packet
-    return protocol == this->application_protocol || this->ether_type.find(protocol) != std::string::npos; 
-}
-
 
 void print_communications(std::ostream& os, const std::vector<ProcessedInfo>& packets, const std::string& protocol)
 {

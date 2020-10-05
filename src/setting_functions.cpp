@@ -9,14 +9,20 @@
 
 uint16_t big_endian_to_small(uint16_t value) { return (((value & 0xff)<<8) | ((value & 0xff00)>>8)); }
 
+bool ProcessedInfo::is_using(const std::string& protocol) const
+{
+    // true, if protocol is used in the packet
+    return protocol == this->application_protocol || this->ether_type.find(protocol) != std::string::npos; 
+}
+
 bool ProcessedInfo::is_starting() const
 {
     // returns if packet is starting new communication
-    if(this->transport_protocol == "TCP") return this->syn;
+    if(this->transport_protocol == "TCP") 
+        return this->syn;
     if(this->ether_type == "ARP-REQUEST") return true;
     return false;
 }
-
 
 bool ProcessedInfo::is_ending() const
 {
