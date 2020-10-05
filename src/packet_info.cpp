@@ -66,6 +66,15 @@ void ProcessedInfo::save_mac()
     }
 }
 
+void ProcessedInfo::save_mac_arp(const uint8_t *data_start)
+{
+    for(int i = 0; i < Ethernet::MAC_SIZE; i++)
+    {
+        this->mac_src[i] = data_start[i+8];
+        this->mac_dst[i] = data_start[i+18];
+    }
+}
+
 void ProcessedInfo::save_ip_arp(const uint8_t *data_start)
 {        
     // Save IP addresses from ARP
@@ -88,19 +97,25 @@ void ProcessedInfo::save_ipv4(const uint8_t *data_start)
 ProcessedInfo::ProcessedInfo(const struct pcap_pkthdr* packet_header, const uint8_t* packet_body)
     :data{packet_header, packet_body}
 {
-    this->save_mac();
     const uint8_t* data_start = this->set_ethernet_type(packet_body);
+    if(!data_start)
+    {
+        // Probably like this
+        this->transport_protocol = "IPX";
+        return;
+    }
     this->set_network_layer(packet_body, loaded_configuration[1]);
-
     if(this->ether_type == "ARP")
     {
         if(data_start[7] == 1) this->ether_type.append("-REQUEST");
         else if(data_start[7] == 2) this->ether_type.append("-REPLY");
         // Save IP addresses from ARP
+        this->save_mac_arp(data_start);
         this->save_ip_arp(data_start);
     }
     else
     {
+        this->save_mac();
         // Getting TCP/UDP/ICMP
         this->set_transport_layer(data_start, loaded_configuration[2]);
         // Save IP addresses from IPv4

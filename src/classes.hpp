@@ -40,7 +40,9 @@ public:
     bool is_using(const std::string& protocol) const;
     bool is_starting() const;
     bool is_ending() const;
+    
     void save_mac();
+    void save_mac_arp(const uint8_t *data_start);
     void save_ip_arp(const uint8_t *data_start);
     void save_ipv4(const uint8_t *data_start);
     
