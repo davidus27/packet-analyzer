@@ -44,6 +44,11 @@ void print_ip_addresses(std::ostream& os, const std::vector<ProcessedInfo>& pack
     << most_frequent.second << ".\n";
 }
 
+bool ProcessedInfo::is_using(const std::string& protocol) const
+{
+    // true, if protocol is used in the packet
+    return protocol == this->application_protocol || this->ether_type.find(protocol) != std::string::npos; 
+}
 
 
 void print_communications(std::ostream& os, const std::vector<ProcessedInfo>& packets, const std::string& protocol)
@@ -52,19 +57,19 @@ void print_communications(std::ostream& os, const std::vector<ProcessedInfo>& pa
     unsigned long communication_num = 1;
     for(unsigned long i = 0; i < packets.size(); i++)
     {
-        if(packets[i].is_starting(protocol)) 
+        if(packets[i].is_starting() && packets[i].is_using(protocol)) 
         {
             os << "Komunikacia c." << std::dec << communication_num++ << '\n';
             binding.first = packets[i].ip_dst;
             binding.second = packets[i].ip_src;
             for(unsigned long j = i; j < packets.size(); j++)
             {
-                if(packets[j].found_binding(binding, protocol)) 
+                if(packets[j].found_binding(binding) && packets[j].is_using(protocol)) 
                 {
                     os << "Ramec " << std::dec << j + 1 << '\n';
                     os << packets[j];
                 }
-                if(packets[j].is_ending(protocol)) break;
+                if(packets[j].is_ending() && packets[j].is_using(protocol)) break;
             }
         }
     }

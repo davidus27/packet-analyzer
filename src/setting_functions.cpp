@@ -9,29 +9,30 @@
 
 uint16_t big_endian_to_small(uint16_t value) { return (((value & 0xff)<<8) | ((value & 0xff00)>>8)); }
 
-bool ProcessedInfo::is_starting(const std::string& protocol) const
+bool ProcessedInfo::is_starting() const
 {
     // returns if packet is starting new communication
-    if(protocol == "HTTP" || protocol == "HTTPS") return this->syn;
-    if(protocol == "ARP") return this->ether_type == "ARP-REQUEST";
+    if(this->transport_protocol == "TCP") return this->syn;
+    if(this->ether_type == "ARP-REQUEST") return true;
     return false;
 }
 
 
-bool ProcessedInfo::is_ending(const std::string& protocol) const
+bool ProcessedInfo::is_ending() const
 {
     // returns if packet is ending existing communication
-    if(protocol == "HTTP" || protocol == "HTTPS") return this->fin;
-    if(protocol == "ARP") return this->ether_type == "ARP-REPLY";
+    if(this->transport_protocol == "TCP") return this->fin_rst;
+    if(this->ether_type == "ARP-REPLY") return true;
     return false;
 }
 
-bool ProcessedInfo::found_binding(std::pair<IP, IP> binding, const std::string& protocol) const
+bool ProcessedInfo::found_binding(std::pair<IP, IP> binding) const
 {
     // Checks if packet belong to the communication
-    if((binding.first == this->ip_dst || binding.first == this->ip_src) &&
-        (binding.second == this->ip_dst || binding.second == this->ip_src))
-        return true;
+    if(binding.first == this->ip_dst)
+        return binding.second == this->ip_src;
+    if(binding.first == this->ip_src)
+        return binding.second == this->ip_dst;
     return false;
 }
 

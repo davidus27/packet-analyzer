@@ -36,9 +36,13 @@ struct ProcessedInfo
 public:
     ProcessedInfo(const struct pcap_pkthdr* packet_header, const uint8_t* packet_body);
     ~ProcessedInfo();
-    bool found_binding(std::pair<IP, IP> binding, const std::string& protocol) const;
-    bool is_starting(const std::string& protocol) const;
-    bool is_ending(const std::string& protocol) const;
+    bool found_binding(std::pair<IP, IP> binding) const;
+    bool is_using(const std::string& protocol) const;
+    bool is_starting() const;
+    bool is_ending() const;
+    void save_mac();
+    void save_ip_arp(const uint8_t *data_start);
+    void save_ipv4(const uint8_t *data_start);
     
 
     MAC mac_dst;
@@ -47,7 +51,7 @@ public:
     IP ip_src;
     EthernetStandard ethernet_standard;
     bool syn = false;
-    bool fin = false;
+    bool fin_rst = false;
 
     // should use Short String Optimization, so no allocation
     std::string ether_type;

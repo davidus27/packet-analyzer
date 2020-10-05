@@ -30,8 +30,7 @@ void execute_asked_function(std::ostream& file, const std::vector<ProcessedInfo>
     std::cout << "1. Print all packets.\n";
     std::cout << "2. Print unique source IP addresses.\n";
     std::cout << "3. Print all communications of specific protocol.\n";
-    std::cout << "4. Don't know what is fourth one yet >.<\n";
-    std::cout << "Input your option[1-4]: ";
+    std::cout << "Input your option[1-3]: ";
     int input;
     std::cin >> input;
 
