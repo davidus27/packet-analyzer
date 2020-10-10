@@ -130,7 +130,7 @@ ProcessedInfo::ProcessedInfo(const struct pcap_pkthdr* packet_header, const uint
             
             if(transport_data_start[13] & 1 || transport_protocol[13] & 4) // FIN or RST
                 this->fin_rst = true;
-            else if(transport_data_start[13] & 2)
+            else if((transport_data_start[13] & 2) && !(transport_data_start[13] & 16))
                 this->syn = true;
         }
         else if(this->transport_protocol == "UDP")
