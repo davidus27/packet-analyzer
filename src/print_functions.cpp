@@ -44,6 +44,21 @@ void print_ip_addresses(std::ostream& os, const std::vector<ProcessedInfo>& pack
     << most_frequent.second << ".\n";
 }
 
+unsigned long size_of_communication(
+    const std::vector<ProcessedInfo>& packets,
+    std::pair<IP, IP> binding,
+    const std::string& protocol,
+    unsigned long start
+)
+{
+    unsigned long counter{0};
+    for(unsigned long j = start; j < packets.size(); j++)
+    {
+        if(packets[j].found_binding(binding) && packets[j].is_using(protocol)) counter++;
+        if(packets[j].is_ending() && packets[j].is_using(protocol)) break;
+    }
+    return counter;
+}
 
 void print_communications(std::ostream& os, const std::vector<ProcessedInfo>& packets, const std::string& protocol)
 {
@@ -56,16 +71,21 @@ void print_communications(std::ostream& os, const std::vector<ProcessedInfo>& pa
             os << "Komunikacia c." << std::dec << communication_num++ << '\n';
             binding.first = packets[i].ip_dst;
             binding.second = packets[i].ip_src;
+            unsigned long until_now{20}, from_now;
+            from_now = size_of_communication(packets, binding, protocol, i);
+            from_now = from_now > 40 ? from_now - 20 : 0;
             for(unsigned long j = i; j < packets.size(); j++)
             {
-                if(packets[j].found_binding(binding) && packets[j].is_using(protocol)) 
+                if(j <= until_now || j > from_now)
                 {
-                    os << "Ramec " << std::dec << j + 1 << '\n';
-                    os << packets[j];
+                    if(packets[j].found_binding(binding) && packets[j].is_using(protocol)) 
+                    {
+                        os << "Ramec " << std::dec << j + 1 << '\n';
+                        os << packets[j];
+                    }
                 }
                 if(packets[j].is_ending() && packets[j].is_using(protocol)) break;
             }
         }
-    }
-    
+    }   
 }
