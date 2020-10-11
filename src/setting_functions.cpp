@@ -1,33 +1,15 @@
 #include <iostream>
 #include <iomanip> // for number formating
 #include <vector>
-#include <fstream>
-#include <string>
-
 #include "processed_packet.hpp"
 
 
 bool ProcesedPacket::is_using(const std::string& protocol) const
 {
     // true, if protocol is used in the packet
-    return protocol == this->application_protocol || this->ether_type.find(protocol) != std::string::npos; 
-}
-
-bool ProcesedPacket::is_starting() const
-{
-    // returns if packet is starting new communication
-    if(this->transport_protocol == "TCP") 
-        return this->syn;
-    if(this->ether_type == "ARP-REQUEST") return true;
-    return false;
-}
-
-bool ProcesedPacket::is_ending() const
-{
-    // returns if packet is ending existing communication
-    if(this->transport_protocol == "TCP") return this->fin_rst;
-    if(this->ether_type == "ARP-REPLY") return true;
-    return false;
+    return protocol == this->application_protocol 
+    || this->ether_type.find(protocol) != std::string::npos
+    || this->transport_protocol == protocol; 
 }
 
 bool ProcesedPacket::found_binding(std::pair<IP, IP> binding) const
@@ -89,7 +71,39 @@ void ProcesedPacket::set_ports(const uint8_t* transport_data_start, const std::v
     if(!this->dst_port) this->dst_port = big_endian_to_small(*(uint16_t*)(transport_data_start+2));
 }
 
-void ProcesedPacket::save_mac()
+void ProcesedPacket::set_arp_flags()
+{
+    if(this->ether_type == "ARP-REQUEST") this->is_starting_packet = true;
+    else if(this->ether_type == "ARP-REPLY") this->is_ending_packet = true;
+}
+
+void ProcesedPacket::set_flags(const uint8_t* transport_data_start)
+{
+    // TODO : Make compatible for TCP and UDP
+    if(this->transport_protocol == "TCP")
+    {
+        // FIN or RST
+        this->is_ending_packet = transport_data_start[13] & 1 || transport_protocol[13] & 4;
+        // SYN without ACK
+        this->is_starting_packet = (transport_data_start[13] & 2) && !(transport_data_start[13] & 16);
+        return;
+    }
+    else if(this->transport_protocol == "ICMP") 
+    {
+        this->is_starting_packet = transport_data_start[0] & 8;
+        this->is_ending_packet = false;
+        return;
+    }
+    else if(this->application_protocol == "TFTP")
+    {
+        this->is_starting_packet = transport_data_start[9] & 1;
+        this->is_ending_packet = false; 
+        return;
+    }
+}
+
+
+void ProcesedPacket::set_mac()
 {
     for(int i = 0; i < Ethernet::MAC_SIZE; i++)
     {
@@ -98,7 +112,7 @@ void ProcesedPacket::save_mac()
     }
 }
 
-void ProcesedPacket::save_mac_arp(const uint8_t *data_start)
+void ProcesedPacket::set_mac_arp(const uint8_t *data_start)
 {
     for(int i = 0; i < Ethernet::MAC_SIZE; i++)
     {
@@ -107,9 +121,9 @@ void ProcesedPacket::save_mac_arp(const uint8_t *data_start)
     }
 }
 
-void ProcesedPacket::save_ip_arp(const uint8_t *data_start)
+void ProcesedPacket::set_ip_arp(const uint8_t *data_start)
 {        
-    // Save IP addresses from ARP
+    // set IP addresses from ARP
     for(int i = 0; i < Ethernet::IP_SIZE; i++)
     {
         this->ip_src[i] = data_start[i+14];
@@ -117,7 +131,7 @@ void ProcesedPacket::save_ip_arp(const uint8_t *data_start)
     }
 }
 
-void ProcesedPacket::save_ipv4(const uint8_t *data_start)
+void ProcesedPacket::set_ipv4(const uint8_t *data_start)
 {
     for(int i = 0; i < Ethernet::IP_SIZE; i++)
     {

@@ -37,16 +37,14 @@ public:
     ~ProcesedPacket();
     bool found_binding(std::pair<IP, IP> binding) const;
     bool is_using(const std::string& protocol) const;
-    bool is_starting() const;
-    bool is_ending() const;
     IP ip_dst;
     IP ip_src;
+    bool is_starting_packet = false;
+    bool is_ending_packet = false;
 private:
     MAC mac_dst;
     MAC mac_src;
     EthernetStandard ethernet_standard;
-    bool syn = false;
-    bool fin_rst = false;
 
     // should use Short String Optimization, so no allocation
     std::string ether_type;
@@ -61,11 +59,12 @@ private:
     void set_network_layer(const std::vector<std::pair<int, std::string>>& configuration);
     void set_transport_layer(const uint8_t* data_start, const std::vector<std::pair<int, std::string>>& configuration);
     void set_ports(const uint8_t* transport_data_start, const std::vector<std::pair<int, std::string>>& configuration);
-    void set_tcp_flags(const uint8_t* transport_data_start);
-    void save_mac();
-    void save_mac_arp(const uint8_t *data_start);
-    void save_ip_arp(const uint8_t *data_start);
-    void save_ipv4(const uint8_t *data_start);
+    void set_arp_flags();
+    void set_flags(const uint8_t* transport_data_start);
+    void set_mac();
+    void set_mac_arp(const uint8_t *data_start);
+    void set_ip_arp(const uint8_t *data_start);
+    void set_ipv4(const uint8_t *data_start);
     friend std::ostream& operator<<(std::ostream& os, const ProcesedPacket& info);
 
 };

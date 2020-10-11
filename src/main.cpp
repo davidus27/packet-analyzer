@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
             std::ofstream file;
             if(argc == 3) file.open(argv[2]);
             else file.open(DEFAULT_FILENAME);
-            
+            file << "File: " << argv[1] << '\n'; // Which pcap file is analyzed
             execute_asked_function(file, packets);
             file.close();
         }

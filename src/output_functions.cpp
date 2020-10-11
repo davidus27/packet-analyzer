@@ -55,7 +55,7 @@ unsigned long size_of_communication(
     for(unsigned long j = start; j < packets.size(); j++)
     {
         if(packets[j].found_binding(binding) && packets[j].is_using(protocol)) counter++;
-        if(packets[j].is_ending() && packets[j].is_using(protocol)) break;
+        if(packets[j].is_ending_packet && packets[j].is_using(protocol)) break;
     }
     return counter;
 }
@@ -67,7 +67,7 @@ void print_communications(std::ostream& os, const std::vector<ProcesedPacket>& p
     unsigned long until_now{20}, from_now;
     for(unsigned long i = 0; i < packets.size(); i++)
     {
-        if(packets[i].is_starting() && packets[i].is_using(protocol)) 
+        if(packets[i].is_starting_packet && packets[i].is_using(protocol)) 
         {
             os << "Komunikacia c." << std::dec << communication_num++ << '\n';
             binding.first = packets[i].ip_dst;
@@ -86,7 +86,7 @@ void print_communications(std::ostream& os, const std::vector<ProcesedPacket>& p
                         os << packets[j];
                     }
                 }
-                if(packets[j].is_ending() && packets[j].is_using(protocol)) break;
+                if(packets[j].is_ending_packet && packets[j].is_using(protocol)) break;
             }
         }
     }   

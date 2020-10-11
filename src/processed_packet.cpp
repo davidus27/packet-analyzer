@@ -60,19 +60,11 @@ const uint8_t* ProcesedPacket::set_frame_protocols()
     return nullptr;
 }
 
-void ProcesedPacket::set_tcp_flags(const uint8_t* transport_data_start)
-{
-    if(transport_data_start[13] & 1 || transport_protocol[13] & 4) // FIN or RST
-        this->fin_rst = true;
-    else if((transport_data_start[13] & 2) && !(transport_data_start[13] & 16))
-        this->syn = true;
-}
-
 
 ProcesedPacket::ProcesedPacket(const struct pcap_pkthdr* packet_header, const uint8_t* packet_body)
     :data{packet_header, packet_body}
 {
-    this->save_mac();
+    this->set_mac();
     const uint8_t* data_start = this->set_frame_protocols();    
     if(!data_start) return;
     this->set_network_layer(loaded_configurations[1]);
@@ -81,29 +73,27 @@ ProcesedPacket::ProcesedPacket(const struct pcap_pkthdr* packet_header, const ui
     {
         if(data_start[7] == 1) this->ether_type.append("-REQUEST");
         else if(data_start[7] == 2) this->ether_type.append("-REPLY");
-        // Save IP addresses from ARP
-        this->save_mac_arp(data_start);
-        this->save_ip_arp(data_start);
+        // set IP addresses from ARP
+        this->set_mac_arp(data_start);
+        this->set_ip_arp(data_start);
+        this->set_arp_flags();
     }
     else
     {
         // Getting TCP/UDP/ICMP
         this->set_transport_layer(data_start, loaded_configurations[2]);
-        // Save IP addresses from IPv4
-        this->save_ipv4(data_start);
+        // set IP addresses from IPv4
+        this->set_ipv4(data_start);
         // Shift by size of IPv4 header from IHL value.
         // Size is in octets so multiply by 4
         uint8_t ihl_value = data_start[0] & 0xf;
         const uint8_t* transport_data_start = data_start + (ihl_value * 4);
+
         if(this->transport_protocol == "TCP")
-        {
             this->set_ports(transport_data_start, loaded_configurations[3]);
-            this->set_tcp_flags(transport_data_start);
-        }
         else if(this->transport_protocol == "UDP")
-        {
-            this->set_ports(transport_data_start, loaded_configurations[3]);    
-        }
+            this->set_ports(transport_data_start, loaded_configurations[4]);    
+        this->set_flags(transport_data_start);
     }
 
 }
