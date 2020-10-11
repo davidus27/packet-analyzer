@@ -107,25 +107,28 @@ std::ostream& operator<<(std::ostream& os, const ProcesedPacket& info)
     << info.data.real_size << " B\n"
 
     << info.ethernet_standard << '\n'
-    
     << "Zdrojová MAC adresa: "
     << info.mac_src
 
     << "Cieľová MAC adresa: "
-    << info.mac_dst;
+    << info.mac_dst
 
-    os << info.ether_type << '\n'
-    << "Zdrojová IP adresa: "
-    << info.ip_src << '\n'
+    << info.ether_type << '\n';
+    if(info.ethernet_standard == EthernetStandard::EthernetII)
+    {
+        os << "Zdrojová IP adresa: "
+        << info.ip_src << '\n'
 
-    << "Cieľová IP adresa: "
-    << info.ip_dst << '\n';
+        << "Cieľová IP adresa: "
+        << info.ip_dst << '\n';
 
-    if(!info.transport_protocol.empty()) os << info.transport_protocol << '\n';
-    if(!info.application_protocol.empty()) os << info.application_protocol << '\n';
-    
-    if(info.src_port) os << "Zdrojovy port: " << (int)info.src_port << '\n';
-    if(info.dst_port) os << "Cielovy port: " << (int)info.dst_port << '\n';
+        if(!info.transport_protocol.empty()) os << info.transport_protocol << '\n';
+        if(!info.application_protocol.empty()) os << info.application_protocol << '\n';
+        
+        if(info.src_port) os << "Zdrojovy port: " << (int)info.src_port << '\n';
+        if(info.dst_port) os << "Cielovy port: " << (int)info.dst_port << '\n';
+    }
+
     os << info.data << '\n';
     return os;
 }

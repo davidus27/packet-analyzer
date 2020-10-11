@@ -72,7 +72,8 @@ void ProcesedPacket::set_tcp_flags(const uint8_t* transport_data_start)
 ProcesedPacket::ProcesedPacket(const struct pcap_pkthdr* packet_header, const uint8_t* packet_body)
     :data{packet_header, packet_body}
 {
-    const uint8_t* data_start = this->set_frame_protocols();
+    this->save_mac();
+    const uint8_t* data_start = this->set_frame_protocols();    
     if(!data_start) return;
     this->set_network_layer(loaded_configurations[1]);
 
@@ -86,7 +87,6 @@ ProcesedPacket::ProcesedPacket(const struct pcap_pkthdr* packet_header, const ui
     }
     else
     {
-        this->save_mac();
         // Getting TCP/UDP/ICMP
         this->set_transport_layer(data_start, loaded_configurations[2]);
         // Save IP addresses from IPv4

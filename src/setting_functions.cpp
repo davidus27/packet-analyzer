@@ -6,7 +6,6 @@
 
 #include "processed_packet.hpp"
 
-uint16_t big_endian_to_small(uint16_t value) { return (((value & 0xff)<<8) | ((value & 0xff00)>>8)); }
 
 bool ProcesedPacket::is_using(const std::string& protocol) const
 {
@@ -41,8 +40,6 @@ bool ProcesedPacket::found_binding(std::pair<IP, IP> binding) const
     return false;
 }
 
-
-
 std::vector<std::pair<int, std::string>> load_configurations(const std::string& name)
 {
     std::string text;
@@ -70,20 +67,7 @@ std::vector<std::pair<int, std::string>> load_configurations(const std::string& 
 
 uint16_t ProcesedPacket::get_ether_type()
 {
-    // NON FUNCTIONAL
-    const uint8_t* ether = this->data.payload.data();
-    switch (this->ethernet_standard)
-    {
-        case EthernetStandard::EthernetII:
-            ether += Ethernet::ETHER_TYPE_II_OFFSET;
-            break;
-        case EthernetStandard::IEEE_LLC:
-            ether += Ethernet::ETHER_TYPE_LLC_OFFSET;
-            break;
-        default:
-            return 0;
-    }
-    return big_endian_to_small(*(uint16_t*)(ether));
+    return big_endian_to_small(*(uint16_t*)(this->data.payload.data() + Ethernet::ETHER_TYPE_II_OFFSET));
 }
 
 void ProcesedPacket::set_network_layer(const std::vector<std::pair<int, std::string>>& configuration)
@@ -128,9 +112,6 @@ void ProcesedPacket::set_ports(const uint8_t* transport_data_start, const std::v
     if(!this->src_port) this->src_port = big_endian_to_small(*(uint16_t*)transport_data_start);
     if(!this->dst_port) this->dst_port = big_endian_to_small(*(uint16_t*)(transport_data_start+2));
 }
-
-
-
 
 void ProcesedPacket::save_mac()
 {
