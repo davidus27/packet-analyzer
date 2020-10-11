@@ -5,10 +5,10 @@
 #include <fstream>
 
 #include <pcap.h>
-#include "classes.hpp"
+#include "processed_packet.hpp"
 
 
-std::vector<std::pair<IP, int>> get_unique_addresses(const std::vector<ProcessedInfo>& packets)
+std::vector<std::pair<IP, int>> get_unique_addresses(const std::vector<ProcesedPacket>& packets)
 {
     std::vector<std::pair<IP, int>> used;
     used.push_back({packets[0].ip_src, 1});
@@ -30,7 +30,7 @@ std::vector<std::pair<IP, int>> get_unique_addresses(const std::vector<Processed
     return used;
 }
 
-void print_ip_addresses(std::ostream& os, const std::vector<ProcessedInfo>& packets)
+void print_ip_addresses(std::ostream& os, const std::vector<ProcesedPacket>& packets)
 {
     os << "IP adresy vysielajucich uzlov:\n";
     std::pair<IP, int> most_frequent;
@@ -45,7 +45,7 @@ void print_ip_addresses(std::ostream& os, const std::vector<ProcessedInfo>& pack
 }
 
 unsigned long size_of_communication(
-    const std::vector<ProcessedInfo>& packets,
+    const std::vector<ProcesedPacket>& packets,
     std::pair<IP, IP> binding,
     const std::string& protocol,
     unsigned long start
@@ -60,10 +60,11 @@ unsigned long size_of_communication(
     return counter;
 }
 
-void print_communications(std::ostream& os, const std::vector<ProcessedInfo>& packets, const std::string& protocol)
+void print_communications(std::ostream& os, const std::vector<ProcesedPacket>& packets, const std::string& protocol)
 {
     std::pair<IP, IP> binding;
     unsigned long communication_num = 1;
+    unsigned long until_now{20}, from_now;
     for(unsigned long i = 0; i < packets.size(); i++)
     {
         if(packets[i].is_starting() && packets[i].is_using(protocol)) 
@@ -71,9 +72,10 @@ void print_communications(std::ostream& os, const std::vector<ProcessedInfo>& pa
             os << "Komunikacia c." << std::dec << communication_num++ << '\n';
             binding.first = packets[i].ip_dst;
             binding.second = packets[i].ip_src;
-            unsigned long until_now{20}, from_now;
+
             from_now = size_of_communication(packets, binding, protocol, i);
             from_now = from_now > 40 ? from_now - 20 : 0;
+
             for(unsigned long j = i; j < packets.size(); j++)
             {
                 if(j <= until_now || j > from_now)

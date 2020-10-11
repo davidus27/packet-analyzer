@@ -6,7 +6,7 @@
 
 #include <pcap.h>
 
-#include "classes.hpp"
+#include "processed_packet.hpp"
 
 
 Packet::Packet(const struct pcap_pkthdr* packet_header, const uint8_t* packet_body)

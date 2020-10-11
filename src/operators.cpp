@@ -6,7 +6,7 @@
 #include <array>
 
 //#include <stdint.h> // non-standard data types (uintX_t)
-#include "classes.hpp"
+#include "processed_packet.hpp"
 
 std::ostream& operator<<(std::ostream& os, const std::array<uint8_t, Ethernet::IP_SIZE>& address)
 {
@@ -56,7 +56,7 @@ std::ostream& operator<<(std::ostream& os, const std::pair<int, std::string>& pa
 
 
 
-std::ostream& operator<<(std::ostream& os, const std::vector<ProcessedInfo>& list)
+std::ostream& operator<<(std::ostream& os, const std::vector<ProcesedPacket>& list)
 {
     int frame_count = 1;
     for(auto a = list.begin(); a != list.end(); a++)
@@ -80,9 +80,6 @@ std::ostream& operator<<(std::ostream& os, const EthernetStandard& standard)
     case EthernetStandard::IEEE_LLC:
         os << "IEEE 802.3 s LLC ";
         break;
-    case EthernetStandard::IEEE_LLC_SNAP:
-        os << "IEEE 802.3 s LLC a SNAP";
-        break;
     default:
         break;
     }
@@ -101,7 +98,7 @@ std::ostream& operator<<(std::ostream& os, const Packet& packet)
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const ProcessedInfo& info)
+std::ostream& operator<<(std::ostream& os, const ProcesedPacket& info)
 {
     os << std::dec << "dĺžka rámca poskytnutá pcap API – " 
     << info.data.captured_size << " B\n"
@@ -115,9 +112,9 @@ std::ostream& operator<<(std::ostream& os, const ProcessedInfo& info)
     << info.mac_src
 
     << "Cieľová MAC adresa: "
-    << info.mac_dst
+    << info.mac_dst;
 
-    << info.ether_type << '\n'
+    os << info.ether_type << '\n'
     << "Zdrojová IP adresa: "
     << info.ip_src << '\n'
 

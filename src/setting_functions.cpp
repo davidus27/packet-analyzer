@@ -4,18 +4,17 @@
 #include <fstream>
 #include <string>
 
-#include "classes.hpp"
-
+#include "processed_packet.hpp"
 
 uint16_t big_endian_to_small(uint16_t value) { return (((value & 0xff)<<8) | ((value & 0xff00)>>8)); }
 
-bool ProcessedInfo::is_using(const std::string& protocol) const
+bool ProcesedPacket::is_using(const std::string& protocol) const
 {
     // true, if protocol is used in the packet
     return protocol == this->application_protocol || this->ether_type.find(protocol) != std::string::npos; 
 }
 
-bool ProcessedInfo::is_starting() const
+bool ProcesedPacket::is_starting() const
 {
     // returns if packet is starting new communication
     if(this->transport_protocol == "TCP") 
@@ -24,7 +23,7 @@ bool ProcessedInfo::is_starting() const
     return false;
 }
 
-bool ProcessedInfo::is_ending() const
+bool ProcesedPacket::is_ending() const
 {
     // returns if packet is ending existing communication
     if(this->transport_protocol == "TCP") return this->fin_rst;
@@ -32,7 +31,7 @@ bool ProcessedInfo::is_ending() const
     return false;
 }
 
-bool ProcessedInfo::found_binding(std::pair<IP, IP> binding) const
+bool ProcesedPacket::found_binding(std::pair<IP, IP> binding) const
 {
     // Checks if packet belong to the communication
     if(binding.first == this->ip_dst)
@@ -41,6 +40,8 @@ bool ProcessedInfo::found_binding(std::pair<IP, IP> binding) const
         return binding.second == this->ip_dst;
     return false;
 }
+
+
 
 std::vector<std::pair<int, std::string>> load_configurations(const std::string& name)
 {
@@ -67,35 +68,37 @@ std::vector<std::pair<int, std::string>> load_configurations(const std::string& 
     return pairs;
 }
 
-uint16_t ProcessedInfo::get_ether_type(const uint8_t* packet_body)
+uint16_t ProcesedPacket::get_ether_type()
 {
+    // NON FUNCTIONAL
+    const uint8_t* ether = this->data.payload.data();
     switch (this->ethernet_standard)
     {
         case EthernetStandard::EthernetII:
-            packet_body += Ethernet::ETHER_TYPE_II_OFFSET;
+            ether += Ethernet::ETHER_TYPE_II_OFFSET;
             break;
-        case EthernetStandard::IEEE_LLC_SNAP:
-            packet_body += Ethernet::ETHER_TYPE_LLC_OFFSET;
+        case EthernetStandard::IEEE_LLC:
+            ether += Ethernet::ETHER_TYPE_LLC_OFFSET;
             break;
         default:
             return 0;
     }
-    return big_endian_to_small(*(uint16_t*)(packet_body));
+    return big_endian_to_small(*(uint16_t*)(ether));
 }
 
-void ProcessedInfo::set_network_layer(const uint8_t* packet_body, const std::vector<std::pair<int, std::string>>& configuration)
+void ProcesedPacket::set_network_layer(const std::vector<std::pair<int, std::string>>& configuration)
 {
     // Getting IP
     for(auto& conf_pair : configuration)
     {
-        if(conf_pair.first == get_ether_type(packet_body))
+        if(conf_pair.first == get_ether_type())
         {
             this->ether_type = conf_pair.second;
         }
     }
 }
 
-void ProcessedInfo::set_transport_layer(const uint8_t* data_start, const std::vector<std::pair<int, std::string>>& configuration)
+void ProcesedPacket::set_transport_layer(const uint8_t* data_start, const std::vector<std::pair<int, std::string>>& configuration)
 {
     for(auto& conf_pair : configuration)
     {
@@ -105,7 +108,7 @@ void ProcessedInfo::set_transport_layer(const uint8_t* data_start, const std::ve
         }
     }
 }
-void ProcessedInfo::set_ports(const uint8_t* transport_data_start, const std::vector<std::pair<int, std::string>>& configuration)
+void ProcesedPacket::set_ports(const uint8_t* transport_data_start, const std::vector<std::pair<int, std::string>>& configuration)
 {
     for(auto& conf_pair : configuration) // Check TCP config
     {
@@ -124,4 +127,44 @@ void ProcessedInfo::set_ports(const uint8_t* transport_data_start, const std::ve
     }
     if(!this->src_port) this->src_port = big_endian_to_small(*(uint16_t*)transport_data_start);
     if(!this->dst_port) this->dst_port = big_endian_to_small(*(uint16_t*)(transport_data_start+2));
+}
+
+
+
+
+void ProcesedPacket::save_mac()
+{
+    for(int i = 0; i < Ethernet::MAC_SIZE; i++)
+    {
+        this->mac_dst[i] = this->data.payload[i];
+        this->mac_src[i] = this->data.payload[i + Ethernet::MAC_SIZE];
+    }
+}
+
+void ProcesedPacket::save_mac_arp(const uint8_t *data_start)
+{
+    for(int i = 0; i < Ethernet::MAC_SIZE; i++)
+    {
+        this->mac_src[i] = data_start[i+8];
+        this->mac_dst[i] = data_start[i+18];
+    }
+}
+
+void ProcesedPacket::save_ip_arp(const uint8_t *data_start)
+{        
+    // Save IP addresses from ARP
+    for(int i = 0; i < Ethernet::IP_SIZE; i++)
+    {
+        this->ip_src[i] = data_start[i+14];
+        this->ip_dst[i] = data_start[i+24];
+    }
+}
+
+void ProcesedPacket::save_ipv4(const uint8_t *data_start)
+{
+    for(int i = 0; i < Ethernet::IP_SIZE; i++)
+    {
+        this->ip_src[i] = data_start[i+12];
+        this->ip_dst[i] = data_start[i+16];
+    }
 }

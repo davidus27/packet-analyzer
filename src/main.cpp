@@ -6,25 +6,25 @@
 
 #include <pcap.h>
 #include <stdint.h> // non-standard data types (uintX_t)
-#include "classes.hpp"
+#include "processed_packet.hpp"
 
 
 const char* DEFAULT_FILENAME = "program_output.txt";
 
 void process_packet(
-    std::vector<ProcessedInfo>& args,
+    std::vector<ProcesedPacket>& args,
     const struct pcap_pkthdr* packet_header,
     const uint8_t* packet_body
 )
 {
     if(packet_body)
-        args.push_back(ProcessedInfo{packet_header, packet_body});
+        args.push_back(ProcesedPacket{packet_header, packet_body});
     else
         std::cout << "No packets found\n";
 }
 
 
-void execute_asked_function(std::ostream& file, const std::vector<ProcessedInfo>& packets)
+void execute_asked_function(std::ostream& file, const std::vector<ProcesedPacket>& packets)
 {
     std::cout << "Which part of assignment do you what to execute_asked_function?\n";
     std::cout << "1. Print all packets.\n";
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
         pcap_t* handle = pcap_open_offline(argv[1], errbuf);
         if(handle)
         {
-            std::vector<ProcessedInfo> packets = std::vector<ProcessedInfo>();
+            std::vector<ProcesedPacket> packets = std::vector<ProcesedPacket>();
 
             pcap_loop(handle, 0, (pcap_handler)process_packet, (uint8_t*)&packets);
             pcap_close(handle);
