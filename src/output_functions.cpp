@@ -91,3 +91,42 @@ void print_communications(std::ostream& os, const std::vector<ProcesedPacket>& p
         }
     }   
 }
+
+void execute_asked_function(std::ostream& file, const std::vector<ProcesedPacket>& packets)
+{
+    std::cout << "Which part of assignment do you what to execute_asked_function?\n";
+    std::cout << "1. Print all packets.\n";
+    std::cout << "2. Print unique source IP addresses.\n";
+    std::cout << "3. Print all communications of specific protocol.\n";
+    std::cout << "Input your option[1-3]: ";
+    int input;
+    std::cin >> input;
+
+    switch (input)
+    {
+        case 1:
+            file << packets << '\n';
+            break;
+        case 2:
+            print_ip_addresses(file, packets);
+            break;
+        
+        case 3:
+        {
+            std::cout << "What protocol do you want to print? ";
+            std::string protocol; // Too lazy to change to lowercases...
+            // gets only word, not whole line
+            // in the case of problem use geline(cin, protocol) instead
+            std::cin >> protocol; 
+            print_communications(file, packets, protocol);
+            break;
+        }
+
+        default:
+        {
+            std::cout << "Wrong input. Executing default case.\n";
+            file << packets << '\n';
+            break;
+        }
+    }
+}

@@ -77,9 +77,7 @@ uint16_t big_endian_to_small(uint16_t value);
 std::vector<std::pair<int, std::string>> load_configurations(const std::string& name);
 // Functions for main execution
 // What do user want to execute
-void print_ip_addresses(std::ostream& os, const std::vector<ProcesedPacket>& packets);
-void print_communications(std::ostream& os, const std::vector<ProcesedPacket>& packets, const std::string& protocol);
-
+void execute_asked_function(std::ostream& file, const std::vector<ProcesedPacket>& packets);
 
 std::ostream& operator<<(std::ostream& os, const Packet& packet);
 std::ostream& operator<<(std::ostream& os, const EthernetStandard& standard);

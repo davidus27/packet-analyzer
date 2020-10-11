@@ -40,30 +40,6 @@ bool ProcesedPacket::found_binding(std::pair<IP, IP> binding) const
     return false;
 }
 
-std::vector<std::pair<int, std::string>> load_configurations(const std::string& name)
-{
-    std::string text;
-    std::ifstream filename{name};
-    std::vector<std::pair<int, std::string>> pairs;
-    if(filename.is_open())
-    {
-        int position;
-        while(getline(filename, text))
-        {
-            position = text.find_first_of(' ');
-            pairs.push_back({
-                std::stoi(text.substr(0, position), nullptr, 16),
-                text.substr(position+1, text.size())});
-        }
-        filename.close();
-    }
-    else 
-    {
-        std::cout << "Unable to open file"; 
-        return std::vector<std::pair<int, std::string>>();
-    }
-    return pairs;
-}
 
 uint16_t ProcesedPacket::get_ether_type()
 {
