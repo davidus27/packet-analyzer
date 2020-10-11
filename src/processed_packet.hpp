@@ -39,17 +39,11 @@ public:
     bool is_using(const std::string& protocol) const;
     bool is_starting() const;
     bool is_ending() const;
-    
-    void save_mac();
-    void save_mac_arp(const uint8_t *data_start);
-    void save_ip_arp(const uint8_t *data_start);
-    void save_ipv4(const uint8_t *data_start);
-    
-
-    MAC mac_dst;
-    MAC mac_src;
     IP ip_dst;
     IP ip_src;
+private:
+    MAC mac_dst;
+    MAC mac_src;
     EthernetStandard ethernet_standard;
     bool syn = false;
     bool fin_rst = false;
@@ -59,17 +53,21 @@ public:
     std::string transport_protocol;
     std::string application_protocol;
     uint16_t src_port = 0; // value of source port
-    uint16_t dst_port = 0; // value of destination port 
-    
+    uint16_t dst_port = 0; // value of destination port     
     Packet data;
 
-private:
     uint16_t get_ether_type();
     const uint8_t* set_frame_protocols();
     void set_network_layer(const std::vector<std::pair<int, std::string>>& configuration);
     void set_transport_layer(const uint8_t* data_start, const std::vector<std::pair<int, std::string>>& configuration);
     void set_ports(const uint8_t* transport_data_start, const std::vector<std::pair<int, std::string>>& configuration);
     void set_tcp_flags(const uint8_t* transport_data_start);
+    void save_mac();
+    void save_mac_arp(const uint8_t *data_start);
+    void save_ip_arp(const uint8_t *data_start);
+    void save_ipv4(const uint8_t *data_start);
+    friend std::ostream& operator<<(std::ostream& os, const ProcesedPacket& info);
+
 };
 
 
@@ -83,5 +81,5 @@ std::ostream& operator<<(std::ostream& os, const Packet& packet);
 std::ostream& operator<<(std::ostream& os, const EthernetStandard& standard);
 std::ostream& operator<<(std::ostream& os, const ProcesedPacket& info);
 std::ostream& operator<<(std::ostream& os, const std::vector<ProcesedPacket>& list);
-std::ostream& operator<<(std::ostream& os, const std::array<uint8_t, Ethernet::MAC_SIZE>& address);
-std::ostream& operator<<(std::ostream& os, const std::array<uint8_t, Ethernet::IP_SIZE>& address);
+std::ostream& operator<<(std::ostream& os, const MAC& address);
+std::ostream& operator<<(std::ostream& os, const IP& address);
