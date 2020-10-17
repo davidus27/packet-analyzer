@@ -7,7 +7,7 @@
 bool ProcesedPacket::is_using(const std::string& protocol) const
 {
     // true, if protocol is used in the packet
-    return protocol == this->application_protocol 
+    return protocol == "TFTP" || protocol == this->application_protocol 
     || this->ether_type.find(protocol) != std::string::npos
     || this->transport_protocol == protocol; 
 }
@@ -86,12 +86,6 @@ void ProcesedPacket::set_flags(const uint8_t* transport_data_start)
         this->is_ending_packet = transport_data_start[13] & 1 || transport_protocol[13] & 4;
         // SYN without ACK
         this->is_starting_packet = (transport_data_start[13] & 2) && !(transport_data_start[13] & 16);
-        return;
-    }
-    else if(this->transport_protocol == "ICMP") 
-    {
-        this->is_starting_packet = transport_data_start[0] & 8;
-        this->is_ending_packet = false;
         return;
     }
     else if(this->application_protocol == "TFTP")
