@@ -116,8 +116,8 @@ void ProcesedPacket::set_mac_arp(const uint8_t *data_start)
 {
     for(int i = 0; i < Ethernet::MAC_SIZE; i++)
     {
-        this->mac_src[i] = data_start[i+8];
-        this->mac_dst[i] = data_start[i+18];
+        this->arp_macs.first[i] = data_start[i+8];
+        this->arp_macs.second[i] = data_start[i+18];
     }
 }
 
