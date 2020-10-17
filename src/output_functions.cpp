@@ -3,6 +3,7 @@
 #include <vector>
 #include <array>
 #include <fstream>
+#include <map>
 
 #include <pcap.h>
 #include "processed_packet.hpp"
@@ -59,6 +60,33 @@ unsigned long size_of_communication(
     }
     return counter;
 }
+
+void icmp_communications(std::ostream& os, const std::vector<ProcesedPacket>& packets)
+{
+    std::map<std::pair<IP, IP>, bool> m;
+    std::pair<IP, IP> binding;
+    unsigned long communication_num = 1;
+    for(unsigned long i = 0; i < packets.size(); i++)
+    {
+        if(packets[i].is_using("ICMP") && !m[binding] && !m[std::pair<IP, IP>{binding.second, binding.first}]) 
+        {
+            os << "Komunikacia c." << std::dec << communication_num++ << '\n';
+            binding.first = packets[i].ip_dst;
+            binding.second = packets[i].ip_src;
+            for(unsigned long j = i; j < packets.size(); j++)
+            {
+                if(packets[j].found_binding(binding) && packets[j].is_using("ICMP")  && !m[binding] && !m[std::pair<IP, IP>{binding.second, binding.first}]) 
+                {
+                    os << "Ramec " << std::dec << j + 1 << '\n';
+                    os << packets[j];
+                }
+            }
+            m[binding] = true;
+            m[std::pair<IP, IP>{binding.second, binding.first}] = true;
+        }
+    }   
+}
+
 
 void print_communications(std::ostream& os, const std::vector<ProcesedPacket>& packets, const std::string& protocol)
 {
@@ -118,7 +146,10 @@ void execute_asked_function(std::ostream& file, const std::vector<ProcesedPacket
             // gets only word, not whole line
             // in the case of problem use geline(cin, protocol) instead
             std::cin >> protocol; 
-            print_communications(file, packets, protocol);
+            if(protocol == "ICMP")
+                icmp_communications(file, packets);
+            else
+                print_communications(file, packets, protocol);
             break;
         }
 

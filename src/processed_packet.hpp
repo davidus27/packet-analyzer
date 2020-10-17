@@ -44,6 +44,7 @@ public:
 private:
     MAC mac_dst;
     MAC mac_src;
+    std::pair<MAC, MAC> arp_macs;
     EthernetStandard ethernet_standard;
 
     // should use Short String Optimization, so no allocation

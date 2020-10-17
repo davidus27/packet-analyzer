@@ -121,7 +121,10 @@ std::ostream& operator<<(std::ostream& os, const ProcesedPacket& info)
 
         << "Cieľová IP adresa: "
         << info.ip_dst << '\n';
-
+        if(info.ether_type.find("ARP") != std::string::npos) 
+            os << "Zdrojova ARP MAC adresa: " << info.arp_macs.first
+            << "Cielova ARP MAC adresa: " << info.arp_macs.second;
+        
         if(!info.transport_protocol.empty()) os << info.transport_protocol << '\n';
         if(!info.application_protocol.empty()) os << info.application_protocol << '\n';
         

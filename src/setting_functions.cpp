@@ -7,7 +7,7 @@
 bool ProcesedPacket::is_using(const std::string& protocol) const
 {
     // true, if protocol is used in the packet
-    return protocol == this->application_protocol 
+    return protocol == "TFTP" || protocol == this->application_protocol 
     || this->ether_type.find(protocol) != std::string::npos
     || this->transport_protocol == protocol; 
 }
@@ -88,12 +88,6 @@ void ProcesedPacket::set_flags(const uint8_t* transport_data_start)
         this->is_starting_packet = (transport_data_start[13] & 2) && !(transport_data_start[13] & 16);
         return;
     }
-    else if(this->transport_protocol == "ICMP") 
-    {
-        this->is_starting_packet = transport_data_start[0] & 8;
-        this->is_ending_packet = false;
-        return;
-    }
     else if(this->application_protocol == "TFTP")
     {
         this->is_starting_packet = transport_data_start[9] & 1;
@@ -116,8 +110,8 @@ void ProcesedPacket::set_mac_arp(const uint8_t *data_start)
 {
     for(int i = 0; i < Ethernet::MAC_SIZE; i++)
     {
-        this->mac_src[i] = data_start[i+8];
-        this->mac_dst[i] = data_start[i+18];
+        this->arp_macs.first[i] = data_start[i+8];
+        this->arp_macs.second[i] = data_start[i+18];
     }
 }
 
