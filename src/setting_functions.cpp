@@ -84,7 +84,8 @@ void ProcesedPacket::set_flags(const uint8_t* transport_data_start)
     {
         uint8_t offset = transport_data_start[11];
         auto dns_header = transport_data_start;
-        if(this->transport_protocol == "TCP") dns_header += (offset * 4);
+        if(this->transport_protocol == "TCP") 
+            dns_header += (offset * 4);
         else if(this->transport_protocol == "UDP") dns_header += 8;
         else return;
         dns_header += 2; // ignore ID
@@ -92,7 +93,7 @@ void ProcesedPacket::set_flags(const uint8_t* transport_data_start)
         this->is_starting_packet = !((*dns_header) & 0x80);
         this->is_ending_packet = (*dns_header) & 0x80;
     }
-    if(this->transport_protocol == "TCP")
+    else if(this->transport_protocol == "TCP")
     {
         // FIN or RST
         this->is_ending_packet = transport_data_start[13] & 1 || transport_protocol[13] & 4;
