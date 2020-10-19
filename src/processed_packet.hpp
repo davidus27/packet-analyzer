@@ -41,6 +41,7 @@ public:
     IP ip_src;
     bool is_starting_packet = false;
     bool is_ending_packet = false;
+    std::string application_protocol;
 private:
     MAC mac_dst;
     MAC mac_src;
@@ -50,7 +51,6 @@ private:
     // should use Short String Optimization, so no allocation
     std::string ether_type;
     std::string transport_protocol;
-    std::string application_protocol;
     uint16_t src_port = 0; // value of source port
     uint16_t dst_port = 0; // value of destination port     
     Packet data;

@@ -79,7 +79,6 @@ void ProcesedPacket::set_arp_flags()
 
 void ProcesedPacket::set_flags(const uint8_t* transport_data_start)
 {
-    // TODO : Make compatible for TCP and UDP
     if(this->application_protocol == "DNS")
     {
         uint8_t offset = transport_data_start[11];

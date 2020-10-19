@@ -61,6 +61,20 @@ unsigned long size_of_communication(
     return counter;
 }
 
+unsigned long amount_of_packets_using_protocol(
+    const std::vector<ProcesedPacket>& packets,
+    const std::string& protocol
+)
+{
+    unsigned long counter{0};
+    for(unsigned long j = 0; j < packets.size(); j++)
+    {
+        if(packets[j].application_protocol == protocol) counter++;
+    }
+    return counter;
+}
+
+
 void icmp_communications(std::ostream& os, const std::vector<ProcesedPacket>& packets)
 {
     std::map<std::pair<IP, IP>, bool> m;
@@ -93,6 +107,7 @@ void print_communications(std::ostream& os, const std::vector<ProcesedPacket>& p
     std::pair<IP, IP> binding;
     unsigned long communication_num = 1;
     unsigned long until_now{20}, from_now;
+    os << "Pocet paketov pouzivajucich protokol " << protocol << ": "<< amount_of_packets_using_protocol(packets, protocol) << '\n';
     for(unsigned long i = 0; i < packets.size(); i++)
     {
         if(packets[i].is_starting_packet && packets[i].is_using(protocol)) 
