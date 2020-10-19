@@ -94,6 +94,7 @@ ProcesedPacket::ProcesedPacket(const struct pcap_pkthdr* packet_header, const ui
         else if(this->transport_protocol == "UDP")
             this->set_ports(transport_data_start, loaded_configurations[4]);    
         this->set_flags(transport_data_start);
+        
     }
 
 }
