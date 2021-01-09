@@ -85,7 +85,7 @@ void icmp_communications(std::ostream &os, const std::vector<ProcesedPacket> &pa
     {
         if (packets[i].is_using("ICMP") && !m[binding] && !m[std::pair<IP, IP>{binding.second, binding.first}])
         {
-            os << "Komunikacia c." << std::dec << communication_num++ << '\n';
+            os << "Communication #" << std::dec << communication_num++ << '\n';
             binding.first = packets[i].ip_dst;
             binding.second = packets[i].ip_src;
             for (unsigned long j = i; j < packets.size(); j++)
@@ -112,7 +112,7 @@ void print_communications(std::ostream &os, const std::vector<ProcesedPacket> &p
     {
         if (packets[i].is_starting_packet && packets[i].is_using(protocol))
         {
-            os << "Komunikacia c." << std::dec << communication_num++ << '\n';
+            os << "Communication #" << std::dec << communication_num++ << '\n';
             binding.first = packets[i].ip_dst;
             binding.second = packets[i].ip_src;
 
