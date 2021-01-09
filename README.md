@@ -6,13 +6,13 @@ At the start, the program asks the user for standard input. There are more possi
 ![Application input](imgs/1.PNG "Application asking for input on the start")
 
 In this example output, the program prints out all information it collects about the packets such as frame lengths, Ethernet standards, IP and MAC addresses, and protocols used.  
-![Sample of the output by the program](imgs/2.PNG)
+![Output example](imgs/2.PNG "Sample of the output by the program")
 
 The second feature is finding unique addresses that are transmitting packets in the traffic. It uses a hashmap to store unique addresses and prints out the most frequent ones. 
-![Unique addresses](imgs/3.PNG =100x20)
+![Unique addresses](imgs/3.PNG "Example of tracking unique addresses")
 
 There is also an option for basic filtering of communications based on their protocols. You input the name of the protocol (for example TCP) and the filter will print only traffic that uses TCP. It doesn't print them in packet order but in order of communication initialization.  
-![Filtering and tracking the communication in PCAP file](imgs/4.PNG)
+![Protocol filter](imgs/4.PNG "Filtering protocols in the communication")
 
 ## Instalation
 This application works on Linux systems. It uses pcap.h library so to use it, you need to install libpcap library:
