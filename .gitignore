@@ -5,8 +5,6 @@ build/
 # Prerequisites
 *.d
 
-# Text file
-*.txt
 
 # Compiled Object files
 *.slo
