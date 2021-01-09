@@ -3,7 +3,7 @@ It's a simple program for PCAP content analysis. It creates a report in the stan
 
 ## Demo
 At the start, the program asks the user for standard input. There are more possibilities for what the program can execute. 
-![Application asking for input on the start](imgs/1.PNG)
+![Application input](imgs/1.PNG "Application asking for input on the start")
 
 In this example output, the program prints out all information it collects about the packets such as frame lengths, Ethernet standards, IP and MAC addresses, and protocols used.  
 ![Sample of the output by the program](imgs/2.PNG)
